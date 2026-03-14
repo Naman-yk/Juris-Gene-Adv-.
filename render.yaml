@@ -4,7 +4,7 @@ services:
     name: jurisgenie-classic
     env: node
     plan: free
-    buildCommand: node replace-urls.js && cd intelligence-engine && npm install && npm run build
+    buildCommand: node replace-urls.js && cd intelligence-engine && npm run render-build
     startCommand: cd intelligence-engine && npm start
     envVars:
       - key: PORT

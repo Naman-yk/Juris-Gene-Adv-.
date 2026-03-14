@@ -1,0 +1,61 @@
+services:
+  # 1. Classic Landing Page & RAG Server
+  - type: web
+    name: jurisgenie-classic
+    env: node
+    plan: free
+    buildCommand: node replace-urls.js && cd intelligence-engine && npm install && npm run build
+    startCommand: cd intelligence-engine && npm start
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: PRO_UI_URL
+        fromService:
+          name: jurisgenie-pro
+          type: web
+          property: host
+      - key: BACKEND_URL
+        fromService:
+          name: jurisgenie-backend
+          type: web
+          property: host
+      - key: NODE_ENV
+        value: production
+      - fromGroup: jurisgenie-secrets
+
+  # 2. Platform Backend API
+  - type: web
+    name: jurisgenie-backend
+    env: node
+    plan: free
+    buildCommand: npm install -g pnpm && pnpm install && pnpm --filter @jurisgenie/platform run build
+    startCommand: pnpm --filter @jurisgenie/platform run start
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: NODE_ENV
+        value: production
+
+  # 3. Next.js Pro UI
+  - type: web
+    name: jurisgenie-pro
+    env: node
+    plan: free
+    buildCommand: npm install -g pnpm && pnpm install && pnpm --filter @jurisgenie/ui run build
+    startCommand: pnpm --filter @jurisgenie/ui run start
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          name: jurisgenie-backend
+          type: web
+          property: host
+      - key: NODE_ENV
+        value: production
+
+envVarGroups:
+  - name: jurisgenie-secrets
+    envVars:
+      - key: PINECONE_API_KEY
+        sync: false  # Set this manually in the Render dashboard
+      - key: GEMINI_API_KEY
+        sync: false  # Set this manually in the Render dashboard

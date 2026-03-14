@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - JurisGenie</title>
+    <link rel="shortcut icon" href="images/Untitled design (2)-modified.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --gdoc-bg: #f0f4f9;
+            --gdoc-paper: #ffffff;
+            --gdoc-toolbar: #ffffff;
+            --gdoc-border: #e1e3e6;
+            --gdoc-blue: #1a73e8;
+            --gdoc-blue-light: #e8f0fe;
+            --gdoc-text: #202124;
+            --gdoc-text-secondary: #5f6368;
+            --gdoc-red: #d93025;
+            --gdoc-green: #137333;
+            --gdoc-yellow: #f9ab00;
+            --gdoc-hover: #f1f3f4;
+            --shadow-toolbar: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-paper: 0 1px 3px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--gdoc-bg);
+            color: var(--gdoc-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── App Bar ── */
+        .app-bar {
+            background: var(--gdoc-toolbar);
+            box-shadow: var(--shadow-toolbar);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            height: 64px;
+            gap: 12px;
+            border-bottom: 1px solid var(--gdoc-border);
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .app-logo img { width: 40px; height: 40px; border-radius: 50%; }
+        .app-logo span {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--gdoc-text);
+        }
+
+        .doc-title-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-left: 4px;
+        }
+
+        .doc-title {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--gdoc-text);
+            border: 1px solid transparent;
+            padding: 2px 6px;
+            border-radius: 4px;
+            max-width: 300px;
+        }
+
+        .doc-status {
+            font-size: 11px;
+            color: var(--gdoc-text-secondary);
+            padding-left: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .doc-status svg { width: 14px; height: 14px; }
+
+        .app-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .btn-icon {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: var(--gdoc-text-secondary);
+            transition: background 0.15s;
+            text-decoration: none;
+        }
+        .btn-icon:hover { background: var(--gdoc-hover); }
+
+        .btn-signup {
+            background: var(--gdoc-blue);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-family: 'Google Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s, box-shadow 0.15s;
+        }
+        .btn-signup:hover { background: #1557b0; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+
+        /* Mobile hamburger */
+        .menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--gdoc-text-secondary);
+            padding: 8px;
+            border-radius: 50%;
+        }
+        .menu-btn:hover { background: var(--gdoc-hover); }
+        @media (max-width: 768px) {
+            .menu-btn { display: flex; align-items: center; }
+            .desktop-nav, .btn-signup { display: none !important; }
+        }
+
+        /* ── Menu Bar ── */
+        .menu-bar {
+            background: var(--gdoc-toolbar);
+            padding: 0 52px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            height: 36px;
+            border-bottom: 1px solid var(--gdoc-border);
+            overflow-x: auto;
+        }
+
+        .menu-item {
+            font-size: 13px;
+            color: var(--gdoc-text);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            transition: background 0.1s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .menu-item:hover { background: var(--gdoc-hover); color: var(--gdoc-text); }
+        .menu-item.active { color: var(--gdoc-blue); font-weight: 500; }
+
+        /* ── Workspace ── */
+        .workspace {
+            display: flex;
+            flex: 1;
+            align-items: flex-start;
+            padding: 40px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+            gap: 24px;
+        }
+
+        /* ── Document Paper ── */
+        .doc-paper-wrap {
+            position: relative;
+            flex: 1;
+        }
+
+        .doc-page-label {
+            font-size: 11px;
+            color: var(--gdoc-text-secondary);
+            margin-bottom: 6px;
+            padding-left: 4px;
+        }
+
+        .doc-paper {
+            background: var(--gdoc-paper);
+            box-shadow: var(--shadow-paper);
+            border-radius: 4px;
+            padding: 72px 96px;
+            min-height: 80vh;
+        }
+
+        /* Doc typography */
+        .doc-content h1 {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 28px;
+            font-weight: 400;
+            color: var(--gdoc-text);
+            border-bottom: 1px solid var(--gdoc-border);
+            padding-bottom: 16px;
+            margin-bottom: 28px;
+        }
+
+        .doc-content h2 {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--gdoc-text);
+            margin: 32px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-num {
+            background: var(--gdoc-blue-light);
+            color: var(--gdoc-blue);
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .doc-content p {
+            font-size: 14px;
+            line-height: 1.85;
+            color: #3c4043;
+            margin-bottom: 14px;
+        }
+
+        /* Feature grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            border: 1px solid var(--gdoc-border);
+            border-radius: 8px;
+            padding: 16px;
+            background: #fafbfc;
+            transition: box-shadow 0.15s;
+        }
+        .feature-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+        .feature-card .icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .icon.blue { background: var(--gdoc-blue-light); }
+        .icon.green { background: #e6f4ea; }
+        .icon.yellow { background: #fef9e7; }
+
+        .feature-card .title {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gdoc-text);
+            margin-bottom: 4px;
+        }
+        .feature-card .desc {
+            font-size: 12px;
+            color: var(--gdoc-text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Info callout */
+        .callout {
+            border-left: 3px solid var(--gdoc-blue);
+            background: var(--gdoc-blue-light);
+            border-radius: 0 8px 8px 0;
+            padding: 14px 18px;
+            margin: 20px 0;
+            font-size: 13px;
+            color: var(--gdoc-text);
+            line-height: 1.7;
+        }
+        .callout.green {
+            border-color: var(--gdoc-green);
+            background: #e6f4ea;
+        }
+
+        /* Quick facts */
+        .fact-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 12px 0;
+        }
+        .fact-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 13px;
+            color: #3c4043;
+        }
+        .fact-list li::before {
+            content: '✓';
+            color: var(--gdoc-green);
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* Badge chips */
+        .badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 14px 0;
+        }
+        .badge {
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--gdoc-border);
+        }
+        .badge.green { background: #e6f4ea; color: var(--gdoc-green); border-color: #ceead6; }
+        .badge.blue { background: var(--gdoc-blue-light); color: var(--gdoc-blue); border-color: #c5d9f8; }
+        .badge.yellow { background: #fef9e7; color: #b06000; border-color: #fde68a; }
+
+        /* CTA block */
+        .cta-block {
+            margin-top: 32px;
+            padding: 24px;
+            background: #fafbfc;
+            border: 1px solid var(--gdoc-border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .cta-block .cta-text h4 {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--gdoc-text);
+        }
+        .cta-block .cta-text p {
+            font-size: 13px;
+            color: var(--gdoc-text-secondary);
+            margin: 4px 0 0;
+        }
+        .cta-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        .cta-btn {
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: 'Google Sans', sans-serif;
+            font-weight: 500;
+            text-decoration: none;
+            transition: box-shadow 0.15s, background 0.15s;
+            cursor: pointer;
+        }
+        .cta-btn.primary { background: var(--gdoc-blue); color: white; border: none; }
+        .cta-btn.primary:hover { background: #1557b0; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+        .cta-btn.secondary { background: white; color: var(--gdoc-blue); border: 1px solid var(--gdoc-border); }
+        .cta-btn.secondary:hover { background: var(--gdoc-hover); }
+
+        /* Disclaimer */
+        .doc-disclaimer {
+            font-size: 11px;
+            color: #9aa0a6;
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid var(--gdoc-border);
+        }
+
+        /* ── Outline Sidebar ── */
+        .outline-sidebar {
+            width: 220px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 110px;
+        }
+
+        .outline-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow-paper);
+            overflow: hidden;
+        }
+
+        .outline-header {
+            padding: 14px 16px 10px;
+            border-bottom: 1px solid var(--gdoc-border);
+            font-family: 'Google Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gdoc-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .outline-list {
+            padding: 8px 0;
+        }
+
+        .outline-item {
+            display: block;
+            padding: 6px 16px;
+            font-size: 13px;
+            color: var(--gdoc-text-secondary);
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            transition: background 0.1s, border-color 0.1s, color 0.1s;
+            cursor: pointer;
+        }
+        .outline-item:hover { background: var(--gdoc-hover); color: var(--gdoc-text); }
+        .outline-item.active { border-left-color: var(--gdoc-blue); color: var(--gdoc-blue); background: var(--gdoc-blue-light); font-weight: 500; }
+
+        /* ── Footer ── */
+        footer {
+            background: white;
+            border-top: 1px solid var(--gdoc-border);
+            padding: 16px 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--gdoc-text-secondary);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        footer a { color: var(--gdoc-blue); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        .footer-logo { display: flex; align-items: center; gap: 8px; }
+        .footer-logo img { width: 20px; height: 20px; border-radius: 50%; }
+        .footer-logo span { font-weight: 600; color: var(--gdoc-text); }
+
+        .footer-links { display: flex; gap: 16px; }
+
+        /* ── Mobile Sidebar ── */
+        #mobile-menu {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        #mobile-menu.open { transform: translateX(0); }
+        #mobile-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); }
+        #mobile-drawer {
+            position: relative;
+            width: 260px;
+            height: 100%;
+            background: white;
+            padding: 24px 20px;
+            box-shadow: 4px 0 16px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        #mobile-close {
+            position: absolute; top: 16px; right: 16px;
+            background: none; border: none; cursor: pointer;
+            color: var(--gdoc-text-secondary);
+        }
+        .mobile-nav-item {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--gdoc-text);
+            text-decoration: none;
+            transition: background 0.1s;
+        }
+        .mobile-nav-item:hover { background: var(--gdoc-hover); }
+        .mobile-nav-item.active { color: var(--gdoc-blue); font-weight: 500; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .outline-sidebar { display: none; }
+        }
+        @media (max-width: 768px) {
+            .workspace { padding: 24px 12px; }
+            .doc-paper { padding: 40px 28px; }
+            .menu-bar { padding: 0 16px; }
+            .feature-grid { grid-template-columns: 1fr; }
+            footer { padding: 16px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── App Bar ── -->
+<header class="app-bar">
+    <a href="index.html" class="app-logo">
+        <img src="images/Gemini_Generated_Image_fn3u6efn3u6efn3u2122.png" alt="JurisGenie">
+        <span>JurisGenie</span>
+    </a>
+    <!-- <div class="doc-title-area">
+        <div class="doc-title">About JurisGenie</div>
+        <div class="doc-status">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+            Saved to JurisGenie
+        </div>
+    </div> -->
+    <div class="app-bar-actions">
+        <nav class="desktop-nav" style="display:flex; gap:4px;">
+            <a href="index.html" class="menu-item">Home</a>
+            <a href="product.html" class="menu-item">Product</a>
+            <a href="why-world.html" class="menu-item">Why World Use This</a>
+            <a href="about.html" class="menu-item active">About</a>
+        </nav>
+        <a href="signup.html" class="btn-signup">Sign up</a>
+        <button class="menu-btn" id="menu-btn" aria-label="Open menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+    </div>
+</header>
+
+<!-- ── Menu Bar ── -->
+<!-- <div class="menu-bar">
+    <span class="menu-item">File</span>
+    <span class="menu-item">Edit</span>
+    <span class="menu-item">View</span>
+    <span class="menu-item">Insert</span>
+    <span class="menu-item">Format</span>
+    <span class="menu-item">Tools</span>
+    <span class="menu-item">Extensions</span>
+    <span class="menu-item">Help</span>
+</div> -->
+
+<!-- ── Mobile Drawer ── -->
+<div id="mobile-menu">
+    <div id="mobile-overlay"></div>
+    <div id="mobile-drawer">
+        <button id="mobile-close" aria-label="Close menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <div style="margin-top:40px; display:flex; flex-direction:column; gap:4px;">
+            <a href="index.html" class="mobile-nav-item">Home</a>
+            <a href="product.html" class="mobile-nav-item">Product</a>
+            <a href="why-world.html" class="mobile-nav-item">Why World Use This</a>
+            <a href="about.html" class="mobile-nav-item active">About</a>
+            <a href="signup.html" class="mobile-nav-item" style="margin-top:12px; background:var(--gdoc-blue); color:white; text-align:center; border-radius:8px;">Sign up</a>
+        </div>
+    </div>
+</div>
+
+<!-- ── Workspace ── -->
+<div class="workspace">
+
+    <!-- Document Paper -->
+    <div class="doc-paper-wrap">
+        <!-- <div class="doc-page-label">Page 1</div> -->
+        <div class="doc-paper">
+            <div class="doc-content">
+
+                <h1>📄 About JurisGenie</h1>
+
+                <!-- § 1 Mission -->
+                <h2 id="mission"><span class="section-num">1</span> Our Mission</h2>
+                <p>
+                    JurisGenie was created with one clear vision: to make legal language simple, accessible, and actionable.
+                    We are the world's first legal infrastructure platform that transforms unstructured contracts into <strong>deterministic state machines</strong>.
+                </p>
+                <p>
+                    Our platform utilizes <strong>advanced 8-layered intelligence</strong> to highlight risks, explain obligations, and summarize contracts in plain language — providing safe, scalable, and immutable clarity for the modern digital economy.
+                </p>
+
+                <div class="badge-row">
+                    <span class="badge green">Privacy-first</span>
+                    <span class="badge blue">AI-powered</span>
+                    <span class="badge yellow">Actionable</span>
+                </div>
+
+                <!-- § 2 Global Relevance -->
+                <h2 id="why-world"><span class="section-num">2</span> Why World Use This</h2>
+                <p>
+                    In an increasingly complex global economy, cross-border agreements and digital contracts have become the norm. 
+                    Subtle clauses in international freelance agreements, SaaS terms, or rental contracts can lead to significant legal exposure.
+                    JurisGenie provides global clarity — highlighting risks and suggesting actions in plain, universal language.
+                </p>
+                
+                <div class="callout">
+                    Worldwide, billions of deterministic interactions are governed by legal legalese that most people cannot parse. 
+                    JurisGenie bridges this gap with AI-powered infrastructure, providing a "legal compiler" for every individual and enterprise globally.
+                </div>
+
+                <!-- § 3 What We Do -->
+                <h2 id="features"><span class="section-num">3</span> What We Do</h2>
+                <p>JurisGenie brings together three core capabilities to transform how you interact with legal documents:</p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="icon blue">⚖️</div>
+                        <div class="title">Clause Analysis</div>
+                        <div class="desc">Every clause is broken down and explained in plain language, so you know exactly what you're agreeing to.</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon yellow">🚨</div>
+                        <div class="title">Risk Alerts</div>
+                        <div class="desc">High-risk clauses are flagged with color-coded severity scores so nothing slips under the radar.</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon green">✅</div>
+                        <div class="title">Actionable Summary</div>
+                        <div class="desc">Get a clear executive summary with suggested actions — ready to act on, not just read.</div>
+                    </div>
+                </div>
+
+                <!-- § 4 How It Works -->
+                <h2 id="how"><span class="section-num">4</span> How It Works</h2>
+                <ul class="fact-list">
+                    <li>Upload your legal document — PDF, DOCX, or plain text supported</li>
+                    <li>Advanced 8-layered scanning assigns risk scores based on global legal standards</li>
+                    <li>Receive a deterministic, plain-language executive summary within seconds</li>
+                    <li>Ask follow-up questions via the built-in JurisGenie chat assistant</li>
+                    <li>Blockchain-ready: prepare your contracts for immutable anchoring</li>
+                    <li>Documents are processed securely and never stored without your consent</li>
+                </ul>
+
+                <!-- § 5 Privacy -->
+                <h2 id="privacy"><span class="section-num">5</span> Privacy Commitment</h2>
+                <div class="callout green">
+                    Your documents are yours. JurisGenie processes all content securely and does not store,
+                    share, or use your documents for training purposes. Privacy is not a feature — it's a foundation.
+                </div>
+
+                <!-- CTA -->
+                <div class="cta-block">
+                    <div class="cta-text">
+                        <h4>Want to make legalese simple for everyone?</h4>
+                        <p>Partner with us, contribute, or try JurisGenie on your next document.</p>
+                    </div>
+                    <div class="cta-buttons">
+                        <a href="index.html#contact" class="cta-btn secondary">Contact us</a>
+                        <a href="upload.html" class="cta-btn primary" onclick="requireAuth(event)">Analyze a document</a>
+                    </div>
+                </div>
+
+                <p class="doc-disclaimer">
+                    JurisGenie is an AI-powered tool and does not constitute legal advice. For complex legal matters,
+                    please consult a qualified attorney. © 2025 JurisGenie. All Rights Reserved.
+                </p>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Outline Sidebar -->
+    <aside class="outline-sidebar">
+        <div class="outline-panel">
+            <div class="outline-header">Document Outline</div>
+            <nav class="outline-list">
+                <a href="#mission" class="outline-item active">1 &nbsp;Our Mission</a>
+                <a href="#why-world" class="outline-item">2 &nbsp;Why World Use This</a>
+                <a href="#features" class="outline-item">3 &nbsp;What We Do</a>
+                <a href="#how" class="outline-item">4 &nbsp;How It Works</a>
+                <a href="#privacy" class="outline-item">5 &nbsp;Privacy Commitment</a>
+            </nav>
+        </div>
+    </aside>
+
+</div>
+
+<!-- ── Footer ── -->
+<footer>
+    <div class="footer-logo">
+        <img src="images/Gemini_Generated_Image_fn3u6efn3u6efn3u2122.png" alt="logo">
+        <span>JurisGenie</span>
+    </div>
+    <div>© 2026 JurisGenie. All Rights Reserved.</div>
+    <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Help</a>
+    </div>
+</footer>
+
+<script>
+    // Mobile menu
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileClose = document.getElementById('mobile-close');
+    const mobileOverlay = document.getElementById('mobile-overlay');
+
+    menuBtn?.addEventListener('click', () => mobileMenu.classList.add('open'));
+    mobileClose?.addEventListener('click', () => mobileMenu.classList.remove('open'));
+    mobileOverlay?.addEventListener('click', () => mobileMenu.classList.remove('open'));
+
+    // Outline active highlight on scroll
+    const sections = document.querySelectorAll('h2[id]');
+    const outlineItems = document.querySelectorAll('.outline-item');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                outlineItems.forEach(item => item.classList.remove('active'));
+                const active = document.querySelector(`.outline-item[href="#${entry.target.id}"]`);
+                if (active) active.classList.add('active');
+            }
+        });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+
+    sections.forEach(s => observer.observe(s));
+</script>
+<script src="js/auth.js"></script>
+</body>
+</html>

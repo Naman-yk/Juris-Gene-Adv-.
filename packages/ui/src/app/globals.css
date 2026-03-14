@@ -1,0 +1,263 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+/* Cache buster: 1 */
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #f1f5f9;
+    --bg-card: #ffffff;
+    --bg-elevated: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --border: 0 0% 89.8%;
+    --brand: #4c6ef5;
+    --brand-light: #dbe4ff;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+    --chart-1: 221 83% 53%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    --infra-cyan: #06b6d4;
+    --infra-purple: #a78bfa;
+    --infra-blue: #3b82f6;
+  }
+
+  .dark {
+    --bg-primary: #030712;
+    --bg-secondary: #0a0f1e;
+    --bg-card: rgba(15, 23, 42, 0.6);
+    --bg-elevated: rgba(15, 23, 42, 0.8);
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #475569;
+    --border: 215 20% 16%;
+    --brand: #06b6d4;
+    --brand-light: #164e63;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --info: #60a5fa;
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 190 95% 39%;
+    --primary-foreground: 222 47% 1%;
+    --secondary: 222 47% 11%;
+    --secondary-foreground: 213 31% 91%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 215 20% 55%;
+    --accent: 216 34% 17%;
+    --accent-foreground: 213 31% 91%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+    --input: 216 34% 17%;
+    --ring: 190 95% 39%;
+    --chart-1: 190 95% 39%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --infra-cyan: #22d3ee;
+    --infra-purple: #c4b5fd;
+    --infra-blue: #60a5fa;
+  }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+
+  /* Grid dot background */
+  .grid-bg {
+    background-image: radial-gradient(circle at 1px 1px, hsl(var(--muted-foreground) / 0.12) 1px, transparent 0);
+    background-size: 32px 32px;
+  }
+
+  /* Glass panel */
+  .glass-panel {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+  }
+
+  .glass-card {
+    @apply bg-[var(--bg-card)] border border-[hsl(var(--border))] rounded-xl shadow-sm;
+    backdrop-filter: blur(12px);
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-200 hover:shadow-md hover:border-[var(--brand)]/30;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 bg-[var(--brand)] text-white rounded-lg font-medium text-sm transition-all duration-200 hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[hsl(var(--border))] rounded-lg font-medium text-sm transition-all duration-200 hover:bg-[var(--bg-elevated)];
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-success {
+    @apply badge bg-emerald-500/10 text-emerald-500;
+  }
+
+  .badge-warning {
+    @apply badge bg-amber-500/10 text-amber-500;
+  }
+
+  .badge-danger {
+    @apply badge bg-red-500/10 text-red-500;
+  }
+
+  .badge-info {
+    @apply badge bg-blue-500/10 text-blue-500;
+  }
+
+  .badge-brand {
+    @apply badge bg-[var(--brand)]/10 text-[var(--brand)];
+  }
+
+  .section-title {
+    @apply text-lg font-semibold text-[var(--text-primary)];
+  }
+
+  /* Pipeline ray animation */
+  @keyframes ray-travel {
+    0% {
+      left: -5%;
+      opacity: 0;
+    }
+
+    5% {
+      opacity: 1;
+    }
+
+    95% {
+      opacity: 1;
+    }
+
+    100% {
+      left: 105%;
+      opacity: 0;
+    }
+  }
+
+  .animate-ray {
+    animation: ray-travel 6s linear infinite;
+  }
+
+  /* Node glow */
+  @keyframes glow-pulse {
+
+    0%,
+    100% {
+      box-shadow: 0 0 8px 2px transparent;
+    }
+
+    50% {
+      box-shadow: 0 0 20px 6px var(--infra-cyan);
+    }
+  }
+
+  .animate-glow {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  /* Subtle float */
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--text-muted);
+    border-radius: 3px;
+  }
+
+  /* Sidebar slim scrollbar */
+  .sidebar-scrollbar::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--text-muted);
+    border-radius: 2px;
+    opacity: 0.3;
+  }
+
+  /* Pipeline connector pulse */
+  @keyframes connector-pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+  }
+
+  .animate-connector-pulse {
+    animation: connector-pulse 3s ease-in-out infinite;
+  }
+}

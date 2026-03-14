@@ -1,0 +1,17 @@
+{
+    "name": "@jurisgenie/ingestion",
+    "version": "1.0.0",
+    "description": "JurisGenie Ingestion Layer — stub for future event ingestion pipeline",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@jurisgenie/core": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^25.3.0",
+        "typescript": "^5.3.3"
+    }
+}

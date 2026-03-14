@@ -6,7 +6,9 @@
 # Dependencies
 node_modules/
 
-# Build output (handled by sub-project .gitignore)
+# Build output
+dist/
+packages/ui/.next/
 
 # Database
 *.sqlite

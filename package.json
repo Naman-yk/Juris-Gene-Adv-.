@@ -1,0 +1,23 @@
+{
+    "name": "jurisgenie",
+    "version": "1.0.0",
+    "private": true,
+    "description": "JurisGenie — Deterministic Legal Execution Engine",
+    "scripts": {
+        "build": "pnpm -r run build",
+        "test": "pnpm -r run test",
+        "demo": "pnpm --filter @jurisgenie/platform run demo",
+        "lint": "eslint 'packages/*/src/**/*.ts'",
+        "format": "prettier --write 'packages/*/src/**/*.ts'"
+    },
+    "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^6.18.0",
+        "@typescript-eslint/parser": "^6.18.0",
+        "eslint": "^8.56.0",
+        "prettier": "^3.2.0",
+        "typescript": "^5.3.3"
+    },
+    "engines": {
+        "node": ">=20.0.0"
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "name": "@jurisgenie/ai",
+    "version": "1.0.0",
+    "description": "JurisGenie AI Layer — stub for future LLM integration",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@jurisgenie/core": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^25.3.0",
+        "typescript": "^5.3.3"
+    }
+}

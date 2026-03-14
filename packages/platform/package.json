@@ -1,0 +1,36 @@
+{
+    "name": "@jurisgenie/platform",
+    "version": "1.0.0",
+    "description": "JurisGenie Layer 6: REST API, SQLite persistence, idempotency cache",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/server.js",
+        "dev": "tsx src/server.ts",
+        "demo": "tsx src/demo.ts",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@jurisgenie/adapters": "workspace:*",
+        "@jurisgenie/core": "workspace:*",
+        "@jurisgenie/engine": "workspace:*",
+        "@jurisgenie/execution": "workspace:*",
+        "better-sqlite3": "^11.0.0",
+        "express": "^4.18.2",
+        "multer": "^2.1.1",
+        "pdf-parse": "^2.4.5",
+        "uuid": "^9.0.0"
+    },
+    "devDependencies": {
+        "@types/better-sqlite3": "^7.6.8",
+        "@types/express": "^4.17.21",
+        "@types/multer": "^2.1.0",
+        "@types/node": "^25.3.0",
+        "@types/pdf-parse": "^1.1.5",
+        "@types/uuid": "^9.0.7",
+        "tsx": "^4.7.0",
+        "typescript": "^5.3.3",
+        "vitest": "^1.2.0"
+    }
+}

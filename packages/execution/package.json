@@ -1,0 +1,23 @@
+{
+    "name": "@jurisgenie/execution",
+    "version": "1.0.0",
+    "description": "JurisGenie Layer 5: Execution Engine — state machine, obligation lifecycle, penalties",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "test": "vitest run",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@jurisgenie/core": "workspace:*",
+        "@jurisgenie/engine": "workspace:*",
+        "decimal.js": "^10.4.3"
+    },
+    "devDependencies": {
+        "@types/node": "^25.3.0",
+        "fast-check": "^4.5.3",
+        "typescript": "^5.3.3",
+        "vitest": "^1.2.0"
+    }
+}

@@ -1,7 +1,11 @@
 import { GoogleGenerativeAI, TaskType } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-const model = genAI.getGenerativeModel({ model: "models/gemini-embedding-001" });
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+    console.warn("⚠️  WARNING: GEMINI_API_KEY is not set. AI Embeddings will be skipped.");
+}
+const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+const model = genAI ? genAI.getGenerativeModel({ model: "models/gemini-embedding-001" }) : null;
 
 // Queue for batch processing
 let pendingEmbeddings: { text: string; resolve: (value: number[]) => void; reject: (reason?: any) => void }[] = [];
@@ -35,15 +39,19 @@ async function processBatchQueue() {
         const remaining = pendingEmbeddings.length - batch.length + 1;
         console.log(`[Embedding] Processing batch of ${batch.length} items... (~${Math.ceil(remaining / BATCH_SIZE) * (RATE_LIMIT_DELAY / 1000)}s remaining)`);
 
+        if (!model) {
+            throw new Error("AI Model not initialized. Set GEMINI_API_KEY.");
+        }
+
         const requests = batch.map(item => ({
             content: { role: "user", parts: [{ text: item.text }] },
             taskType: TaskType.RETRIEVAL_DOCUMENT
         }));
 
-        const result = await model.batchEmbedContents({ requests });
+        const result = await (model as any).batchEmbedContents({ requests });
 
         if (result.embeddings) {
-            // Success! Remove from queue and resolve
+
             pendingEmbeddings.splice(0, BATCH_SIZE);
             result.embeddings.forEach((emb, index) => {
                 if (batch[index]) {

@@ -52,11 +52,17 @@ router.post("/", authenticateToken, upload.single("file"), async (req: express.R
 
       // --- Generate Analysis (1 API call, with auto-retry on 429) ---
       let analysis = {};
-      const apiKey = process.env.GEMINI_API_KEY!;
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      let analysisSuccess = false;
+      const apiKey = process.env.GEMINI_API_KEY;
+      
+      if (!apiKey) {
+        console.warn("GEMINI_API_KEY is missing. Using immediate fallback analysis.");
+        analysisSuccess = false; // Trigger fallback logic below
+      } else {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const prompt = `Analyze this legal document and provide a JSON response with:
+        const prompt = `Analyze this legal document and provide a JSON response with:
       - "clarity_score": number 0-100
       - "risk_score": number 0-100
       - "time_saved": string estimate
@@ -70,33 +76,32 @@ router.post("/", authenticateToken, upload.single("file"), async (req: express.R
       Document Text:
       ${text.slice(0, 30000)}`;
 
-      let analysisSuccess = false;
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          console.log(`Analysis attempt ${attempt}/3...`);
-          const result = await model.generateContent(prompt);
-          const response = await result.response;
-          const textResponse = response.text();
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            console.log(`Analysis attempt ${attempt}/3...`);
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const textResponse = response.text();
 
-          const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            analysis = JSON.parse(jsonMatch[0]);
-            analysisSuccess = true;
-            console.log("Analysis generated successfully!");
-            break;
-          }
-        } catch (analysisError: any) {
-          const is429 = analysisError.status === 429;
-          if (is429 && attempt < 3) {
-            console.log(`Quota hit. Waiting 45s before retry ${attempt + 1}/3...`);
-            await new Promise(r => setTimeout(r, 45000));
-          } else {
-            console.error("Analysis failed:", analysisError.message?.slice(0, 120));
+            const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              analysis = JSON.parse(jsonMatch[0]);
+              analysisSuccess = true;
+              console.log("Analysis generated successfully!");
+              break;
+            }
+          } catch (analysisError: any) {
+            const is429 = analysisError.status === 429;
+            if (is429 && attempt < 3) {
+              console.log(`Quota hit. Waiting 45s before retry ${attempt + 1}/3...`);
+              await new Promise(r => setTimeout(r, 45000));
+            } else {
+              console.error("Analysis failed:", analysisError.message?.slice(0, 120));
+            }
           }
         }
       }
-
-      if (!analysisSuccess) {
+   if (!analysisSuccess) {
         analysis = {
           clarity_score: 50,
           risk_score: 50,

@@ -56,13 +56,32 @@ const DEMO_CONTRACTS: Record<string, any> = {
     },
 };
 
+// Generate demo data for any unknown contract ID (from demo uploads)
+function getDemoContract(id: string) {
+    return {
+        id,
+        title: 'Uploaded Contract',
+        parties: 'Party A ↔ Party B',
+        partyA: 'Party A',
+        partyB: 'Party B',
+        status: 'ACTIVE',
+        state: 'DRAFTED',
+        hash: '0x' + id.replace(/[^a-f0-9]/gi, '').padEnd(64, 'a'),
+        updatedAt: new Date().toISOString().split('T')[0],
+        content: 'This is a demo contract created from an uploaded document. In a production environment with the backend service running, the full extracted text from your PDF would appear here along with AI-powered clause analysis, risk scoring, and entity extraction.\n\nThe JurisGenie pipeline processes documents through: PDF Extraction → OCR & Vision → Clause Parsing → Hash Generation → AI Annotation → Compliance Evaluation → State Machine Execution → Blockchain Anchoring.',
+        pages: 10,
+        clauses: [
+            { id: 'c1', type: 'payment', text: 'Payment terms are extracted from the uploaded document.' },
+            { id: 'c2', type: 'termination', text: 'Termination clauses are identified via AI annotation.' },
+            { id: 'c3', type: 'liability', text: 'Liability provisions are flagged for compliance review.' },
+        ],
+    };
+}
+
 export async function GET(
     _request: NextRequest,
     { params }: { params: { id: string } }
 ) {
-    const contract = DEMO_CONTRACTS[params.id];
-    if (!contract) {
-        return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
-    }
+    const contract = DEMO_CONTRACTS[params.id] || getDemoContract(params.id);
     return NextResponse.json(contract);
 }

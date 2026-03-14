@@ -14,8 +14,7 @@ app.use(cors());
 
 // Route /pro to the Pro UI (Next.js)
 // Using direct middleware mounting to preserve the /pro prefix for Next.js basePath
-app.use(createProxyMiddleware({
-    pathFilter: '/pro',
+app.use('/pro', createProxyMiddleware({
     target: process.env.PRO_UI_URL || 'http://localhost:3000',
     changeOrigin: true,
 }));

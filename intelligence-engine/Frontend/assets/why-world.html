@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why The World Needs JurisGenie</title>
+    <link rel="shortcut icon" href="images/Untitled design (2)-modified.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --gdoc-bg: #f0f4f9;
+            --gdoc-paper: #ffffff;
+            --gdoc-toolbar: #ffffff;
+            --gdoc-border: #e1e3e6;
+            --gdoc-blue: #1a73e8;
+            --gdoc-blue-light: #e8f0fe;
+            --gdoc-text: #202124;
+            --gdoc-text-secondary: #5f6368;
+            --gdoc-red: #d93025;
+            --gdoc-green: #137333;
+            --gdoc-yellow: #f9ab00;
+            --gdoc-hover: #f1f3f4;
+            --shadow-toolbar: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-paper: 0 1px 3px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--gdoc-bg);
+            color: var(--gdoc-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── App Bar ── */
+        .app-bar {
+            background: var(--gdoc-toolbar);
+            box-shadow: var(--shadow-toolbar);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            height: 64px;
+            gap: 12px;
+            border-bottom: 1px solid var(--gdoc-border);
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .app-logo img { width: 40px; height: 40px; border-radius: 50%; }
+        .app-logo span {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--gdoc-text);
+        }
+
+        .doc-title-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-left: 4px;
+        }
+        .doc-title {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--gdoc-text);
+            border: 1px solid transparent;
+            padding: 2px 6px;
+            border-radius: 4px;
+            max-width: 360px;
+        }
+        .doc-status {
+            font-size: 11px;
+            color: var(--gdoc-text-secondary);
+            padding-left: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .doc-status svg { width: 14px; height: 14px; }
+
+        .app-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .btn-signup {
+            background: var(--gdoc-blue);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-family: 'Google Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: background 0.15s, box-shadow 0.15s;
+        }
+        .btn-signup:hover { background: #1557b0; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+
+        .menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--gdoc-text-secondary);
+            padding: 8px;
+            border-radius: 50%;
+        }
+        .menu-btn:hover { background: var(--gdoc-hover); }
+        @media (max-width: 768px) {
+            .menu-btn { display: flex; align-items: center; }
+            .desktop-nav, .btn-signup { display: none !important; }
+        }
+
+        /* ── Menu Bar ── */
+        .menu-bar {
+            background: var(--gdoc-toolbar);
+            padding: 0 52px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            height: 36px;
+            border-bottom: 1px solid var(--gdoc-border);
+            overflow-x: auto;
+        }
+        .menu-item {
+            font-size: 13px;
+            color: var(--gdoc-text);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            transition: background 0.1s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .menu-item:hover { background: var(--gdoc-hover); color: var(--gdoc-text); }
+        .menu-item.active { color: var(--gdoc-blue); font-weight: 500; }
+
+        /* ── Workspace ── */
+        .workspace {
+            display: flex;
+            flex: 1;
+            align-items: flex-start;
+            padding: 40px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+            gap: 24px;
+        }
+
+        .doc-paper-wrap { position: relative; flex: 1; }
+        .doc-page-label {
+            font-size: 11px;
+            color: var(--gdoc-text-secondary);
+            margin-bottom: 6px;
+            padding-left: 4px;
+        }
+        .doc-paper {
+            background: var(--gdoc-paper);
+            box-shadow: var(--shadow-paper);
+            border-radius: 4px;
+            padding: 72px 96px;
+            min-height: 80vh;
+        }
+
+        /* ── Doc Typography ── */
+        .doc-content h1 {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 28px;
+            font-weight: 400;
+            color: var(--gdoc-text);
+            border-bottom: 1px solid var(--gdoc-border);
+            padding-bottom: 16px;
+            margin-bottom: 28px;
+        }
+        .doc-content h2 {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--gdoc-text);
+            margin: 32px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-num {
+            background: var(--gdoc-blue-light);
+            color: var(--gdoc-blue);
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+        .doc-content p {
+            font-size: 14px;
+            line-height: 1.85;
+            color: #3c4043;
+            margin-bottom: 14px;
+        }
+
+        /* ── Problem / Solution Cards ── */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .doc-card {
+            border: 1px solid var(--gdoc-border);
+            border-radius: 8px;
+            padding: 18px 16px;
+            background: #fafbfc;
+            transition: box-shadow 0.15s, transform 0.15s;
+        }
+        .doc-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.09); transform: translateY(-1px); }
+        .doc-card .card-icon {
+            width: 38px; height: 38px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+        .card-icon.red { background: #fde8e8; }
+        .card-icon.yellow { background: #fef9e7; }
+        .card-icon.blue { background: var(--gdoc-blue-light); }
+        .card-icon.green { background: #e6f4ea; }
+        .card-icon.purple { background: #f3e8ff; }
+        .doc-card .card-title {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gdoc-text);
+            margin-bottom: 6px;
+        }
+        .doc-card .card-desc {
+            font-size: 12px;
+            color: var(--gdoc-text-secondary);
+            line-height: 1.65;
+        }
+
+        /* ── Stat Row ── */
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            border: 1px solid var(--gdoc-border);
+            border-radius: 8px;
+            padding: 16px;
+            background: #fafbfc;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--gdoc-blue);
+            line-height: 1;
+        }
+        .stat-card .stat-label {
+            font-size: 12px;
+            color: var(--gdoc-text-secondary);
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        /* ── Callout ── */
+        .callout {
+            border-left: 3px solid var(--gdoc-blue);
+            background: var(--gdoc-blue-light);
+            border-radius: 0 8px 8px 0;
+            padding: 14px 18px;
+            margin: 20px 0;
+            font-size: 13px;
+            color: var(--gdoc-text);
+            line-height: 1.7;
+        }
+        .callout.red {
+            border-color: var(--gdoc-red);
+            background: #fde8e8;
+        }
+        .callout.green {
+            border-color: var(--gdoc-green);
+            background: #e6f4ea;
+        }
+
+        /* ── Comparison Table ── */
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+        .compare-table th {
+            font-family: 'Google Sans', sans-serif;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 10px 14px;
+            background: var(--gdoc-hover);
+            color: var(--gdoc-text-secondary);
+            text-align: left;
+            border-bottom: 2px solid var(--gdoc-border);
+        }
+        .compare-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--gdoc-border);
+            color: #3c4043;
+            vertical-align: top;
+        }
+        .compare-table tr:last-child td { border-bottom: none; }
+        .compare-table tr:hover td { background: var(--gdoc-hover); }
+        .compare-table .bad { color: var(--gdoc-red); font-weight: 500; }
+        .compare-table .good { color: var(--gdoc-green); font-weight: 500; }
+
+        /* ── CTA Block ── */
+        .cta-block {
+            margin-top: 32px;
+            padding: 24px;
+            background: #fafbfc;
+            border: 1px solid var(--gdoc-border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .cta-block .cta-text h4 {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--gdoc-text);
+        }
+        .cta-block .cta-text p {
+            font-size: 13px;
+            color: var(--gdoc-text-secondary);
+            margin: 4px 0 0;
+        }
+        .cta-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        .cta-btn {
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: 'Google Sans', sans-serif;
+            font-weight: 500;
+            text-decoration: none;
+            transition: box-shadow 0.15s, background 0.15s;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .cta-btn.primary { background: var(--gdoc-blue); color: white; border: none; }
+        .cta-btn.primary:hover { background: #1557b0; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+        .cta-btn.secondary { background: white; color: var(--gdoc-blue); border: 1px solid var(--gdoc-border); }
+        .cta-btn.secondary:hover { background: var(--gdoc-hover); }
+
+        .doc-disclaimer {
+            font-size: 11px;
+            color: #9aa0a6;
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid var(--gdoc-border);
+        }
+
+        /* ── Outline Sidebar ── */
+        .outline-sidebar {
+            width: 220px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 110px;
+        }
+        .outline-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow-paper);
+            overflow: hidden;
+        }
+        .outline-header {
+            padding: 14px 16px 10px;
+            border-bottom: 1px solid var(--gdoc-border);
+            font-family: 'Google Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gdoc-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .outline-list { padding: 8px 0; }
+        .outline-item {
+            display: block;
+            padding: 6px 16px;
+            font-size: 13px;
+            color: var(--gdoc-text-secondary);
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            transition: background 0.1s, border-color 0.1s, color 0.1s;
+        }
+        .outline-item:hover { background: var(--gdoc-hover); color: var(--gdoc-text); }
+        .outline-item.active { border-left-color: var(--gdoc-blue); color: var(--gdoc-blue); background: var(--gdoc-blue-light); font-weight: 500; }
+
+        /* ── Footer ── */
+        footer {
+            background: white;
+            border-top: 1px solid var(--gdoc-border);
+            padding: 16px 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--gdoc-text-secondary);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        footer a { color: var(--gdoc-blue); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        .footer-logo { display: flex; align-items: center; gap: 8px; }
+        .footer-logo img { width: 20px; height: 20px; border-radius: 50%; }
+        .footer-logo span { font-weight: 600; color: var(--gdoc-text); }
+        .footer-links { display: flex; gap: 16px; }
+
+        /* ── Mobile Drawer ── */
+        #mobile-menu {
+            position: fixed; inset: 0; z-index: 200;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        #mobile-menu.open { transform: translateX(0); }
+        #mobile-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); }
+        #mobile-drawer {
+            position: relative; width: 260px; height: 100%;
+            background: white; padding: 24px 20px;
+            box-shadow: 4px 0 16px rgba(0,0,0,0.1);
+        }
+        #mobile-close {
+            position: absolute; top: 16px; right: 16px;
+            background: none; border: none; cursor: pointer;
+            color: var(--gdoc-text-secondary);
+        }
+        .mobile-nav-item {
+            display: block; padding: 10px 12px; border-radius: 6px;
+            font-size: 14px; color: var(--gdoc-text); text-decoration: none;
+            transition: background 0.1s;
+        }
+        .mobile-nav-item:hover { background: var(--gdoc-hover); }
+        .mobile-nav-item.active { color: var(--gdoc-blue); font-weight: 500; }
+
+        /* Responsive */
+        @media (max-width: 1024px) { .outline-sidebar { display: none; } }
+        @media (max-width: 768px) {
+            .workspace { padding: 24px 12px; }
+            .doc-paper { padding: 40px 28px; }
+            .menu-bar { padding: 0 16px; }
+            .card-grid { grid-template-columns: 1fr; }
+            .stat-row { grid-template-columns: 1fr; }
+            footer { padding: 16px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── App Bar ── -->
+<header class="app-bar">
+    <a href="index.html" class="app-logo">
+        <img src="images/Gemini_Generated_Image_fn3u6efn3u6efn3u2122.png" alt="JurisGenie">
+        <span>JurisGenie</span>
+    </a>
+    <!-- <div class="doc-title-area">
+        <div class="doc-title">Why The World Needs JurisGenie</div>
+        <div class="doc-status">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+            Saved to JurisGenie
+        </div>
+    </div> -->
+    <div class="app-bar-actions">
+        <nav class="desktop-nav" style="display:flex; gap:4px;">
+            <a href="index.html" class="menu-item">Home</a>
+            <a href="product.html" class="menu-item">Product</a>
+            <a href="why-world.html" class="menu-item active">Why World Use This</a>
+            <a href="about.html" class="menu-item">About</a>
+        </nav>
+        <a href="signup.html" class="btn-signup">Sign up</a>
+        <button class="menu-btn" id="menu-btn" aria-label="Open menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+    </div>
+</header>
+
+<!-- ── Menu Bar ── -->
+<!-- <div class="menu-bar">
+    <span class="menu-item">File</span>
+    <span class="menu-item">Edit</span>
+    <span class="menu-item">View</span>
+    <span class="menu-item">Insert</span>
+    <span class="menu-item">Format</span>
+    <span class="menu-item">Tools</span>
+    <span class="menu-item">Extensions</span>
+    <span class="menu-item">Help</span>
+</div> -->
+
+<!-- ── Mobile Drawer ── -->
+<div id="mobile-menu">
+    <div id="mobile-overlay"></div>
+    <div id="mobile-drawer">
+        <button id="mobile-close" aria-label="Close menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <div style="margin-top:48px; display:flex; flex-direction:column; gap:4px;">
+            <a href="index.html" class="mobile-nav-item">Home</a>
+            <a href="product.html" class="mobile-nav-item">Product</a>
+            <a href="why-world.html" class="mobile-nav-item active">Why World Use This</a>
+            <a href="about.html" class="mobile-nav-item">About</a>
+            <a href="signup.html" class="mobile-nav-item" style="margin-top:12px; background:var(--gdoc-blue); color:white; text-align:center; border-radius:8px;">Sign up</a>
+        </div>
+    </div>
+</div>
+
+<!-- ── Workspace ── -->
+<div class="workspace">
+
+    <!-- Document Paper -->
+    <div class="doc-paper-wrap">
+        <!-- <div class="doc-page-label">Page 1</div> -->
+        <div class="doc-paper">
+            <div class="doc-content">
+
+                <h1>Why The World Needs JurisGenie</h1>
+
+                <p>
+                    Legal documents globally are often packed with jargon, hidden clauses, and complex language
+                    that businesses and individuals struggle to understand. JurisGenie makes legal knowledge accessible,
+                    fair, and transparent on a global scale.
+                </p>
+
+                <div class="callout red">
+                    Across the globe, billions of people sign contracts they don't fully understand — from cross-border 
+                    trade agreements to employment offers, enterprise SaaS terms to freelance contracts. The consequences 
+                    can be multi-billion dollar litigations and long-standing legal debt.
+                </div>
+
+                <!-- § 1 The Scale of the Problem -->
+                <h2 id="scale"><span class="section-num">1</span> Global Legal Fragility</h2>
+                <p>The global legal literacy gap is a multi-trillion dollar friction points in the modern economy.</p>
+
+                <div class="stat-row">
+                    <div class="stat-card">
+                        <div class="stat-value">$10T+</div>
+                        <div class="stat-label">Estimated global economic value locked in complex, opaque contracts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">~5%</div>
+                        <div class="stat-label">Of SMEs can afford high-end legal counsel for every transaction review</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">Infinite</div>
+                        <div class="stat-label">Risk of nondeterministic legal state transitions in traditional systems</div>
+                    </div>
+                </div>
+
+                <!-- § 2 The Challenges -->
+                <h2 id="challenges"><span class="section-num">2</span> The Global Challenge</h2>
+                <p>Systemic barriers prevent the digital economy from interacting with legacy legal frameworks.</p>
+
+                <div class="card-grid">
+                    <div class="doc-card">
+                        <div class="card-icon red">📉</div>
+                        <div class="card-title">Economic Inefficiency</div>
+                        <div class="card-desc">Standard agreements are signed without understanding, exposing companies to massive liability in foreign jurisdictions.</div>
+                    </div>
+                    <div class="doc-card">
+                        <div class="card-icon yellow">🏛️</div>
+                        <div class="card-title">Regulation Mismatch</div>
+                        <div class="card-desc">Global companies struggle to follow local laws (GDPR, CCPA, etc.) hidden in sub-clauses of master service agreements.</div>
+                    </div>
+                    <div class="doc-card">
+                        <div class="card-icon blue">📦</div>
+                        <div class="card-title">Scalability Bottleneck</div>
+                        <div class="card-desc">Manual legal review doesn't scale. Startups and SMEs need instant, deterministic clarity to move at the speed of code.</div>
+                    </div>
+                </div>
+
+                <!-- § 3 Before vs After -->
+                <h2 id="comparison"><span class="section-num">3</span> Before & After JurisGenie</h2>
+                <p>Here's how the experience of reviewing a legal document changes with JurisGenie.</p>
+
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th>Situation</th>
+                            <th>Without JurisGenie</th>
+                            <th>With JurisGenie</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Understanding a clause</td>
+                            <td class="bad">Confused or ignored</td>
+                            <td class="good">Plain-language explanation</td>
+                        </tr>
+                        <tr>
+                            <td>Spotting risky terms</td>
+                            <td class="bad">Missed entirely</td>
+                            <td class="good">Flagged with severity score</td>
+                        </tr>
+                        <tr>
+                            <td>Time to review a contract</td>
+                            <td class="bad">Hours or days</td>
+                            <td class="good">Under 2 minutes</td>
+                        </tr>
+                        <tr>
+                            <td>Cost of review</td>
+                            <td class="bad">$50–$500+ (lawyer fee)</td>
+                            <td class="good">Free to use</td>
+                        </tr>
+                        <tr>
+                            <td>Follow-up questions</td>
+                            <td class="bad">No easy way to ask</td>
+                            <td class="good">Built-in AI chat assistant</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- § 4 How JurisGenie Helps -->
+                <h2 id="solution"><span class="section-num">4</span> How JurisGenie Helps</h2>
+                <p>JurisGenie directly addresses each of these barriers with purpose-built tools.</p>
+
+                <div class="card-grid">
+                    <div class="doc-card">
+                        <div class="card-icon green">💬</div>
+                        <div class="card-title">Simple Language</div>
+                        <div class="card-desc">We translate complex contracts into clear, everyday language anyone can understand — regardless of education level.</div>
+                    </div>
+                    <div class="doc-card">
+                        <div class="card-icon yellow">🚨</div>
+                        <div class="card-title">Risk Alerts</div>
+                        <div class="card-desc">Problematic clauses are highlighted with color-coded risk scores so users can make fully informed decisions before signing.</div>
+                    </div>
+                    <div class="doc-card">
+                        <div class="card-icon purple">🌍</div>
+                        <div class="card-title">Accessible for All</div>
+                        <div class="card-desc">From students in hostels to small business owners in growing global markets, JurisGenie empowers everyone with legal clarity.</div>
+                    </div>
+                </div>
+
+                <div class="callout green">
+                    JurisGenie is the first global infrastructure for legal determinism — ensuring that what you sign
+                    is what you actually get, across any border, in any language.
+                </div>
+
+                <!-- CTA -->
+                <div class="cta-block">
+                    <div class="cta-text">
+                        <h4>Experience legal clarity for yourself.</h4>
+                        <p>Upload any document and see JurisGenie in action — no account required.</p>
+                    </div>
+                    <div class="cta-buttons">
+                        <a href="about.html" class="cta-btn secondary">Learn about us</a>
+                        <a href="upload.html" class="cta-btn primary">Try JurisGenie Now</a>
+                    </div>
+                </div>
+
+                <p class="doc-disclaimer">
+                    JurisGenie is an AI-powered tool and does not constitute legal advice. For complex legal matters,
+                    please consult a qualified attorney. © 2025 JurisGenie. All Rights Reserved.
+                </p>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Outline Sidebar -->
+    <aside class="outline-sidebar">
+        <div class="outline-panel">
+            <div class="outline-header">Document Outline</div>
+            <nav class="outline-list">
+                <a href="#scale" class="outline-item active">1 &nbsp;The Scale of the Problem</a>
+                <a href="#challenges" class="outline-item">2 &nbsp;The Challenges</a>
+                <a href="#comparison" class="outline-item">3 &nbsp;Before & After</a>
+                <a href="#solution" class="outline-item">4 &nbsp;How JurisGenie Helps</a>
+            </nav>
+        </div>
+    </aside>
+
+</div>
+
+<!-- ── Footer ── -->
+<footer>
+    <div class="footer-logo">
+        <img src="images/Gemini_Generated_Image_fn3u6efn3u6efn3u2122.png" alt="logo">
+        <span>JurisGenie</span>
+    </div>
+    <div>© 2026 JurisGenie. All Rights Reserved.</div>
+    <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Help</a>
+    </div>
+</footer>
+
+<script>
+    // Mobile menu
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileClose = document.getElementById('mobile-close');
+    const mobileOverlay = document.getElementById('mobile-overlay');
+
+    menuBtn?.addEventListener('click', () => mobileMenu.classList.add('open'));
+    mobileClose?.addEventListener('click', () => mobileMenu.classList.remove('open'));
+    mobileOverlay?.addEventListener('click', () => mobileMenu.classList.remove('open'));
+
+    // Outline active on scroll
+    const sections = document.querySelectorAll('h2[id]');
+    const outlineItems = document.querySelectorAll('.outline-item');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                outlineItems.forEach(i => i.classList.remove('active'));
+                const active = document.querySelector(`.outline-item[href="#${entry.target.id}"]`);
+                if (active) active.classList.add('active');
+            }
+        });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+
+    sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

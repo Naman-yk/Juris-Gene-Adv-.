@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>JurisGenie | Global Legal Infrastructure for Deterministic Contracts</title>
+    <meta name="description" content="JurisGenie is the first global legal intelligence platform that transforms unstructured contracts into deterministic state machines. Safe, scalable, and immutable.">
+    
+    <!-- OpenGraph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="JurisGenie | Global Legal Determinism">
+    <meta property="og:description" content="AI-powered legal infrastructure for the modern digital economy.">
+    <meta property="og:image" content="images/Gemini_Generated_Image_fn3u6efn3u6efn3u2122.png">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        navy: { 900: '#0F172A', 800: '#1E293B', 700: '#334155' },
+                        cyan: { 400: '#22D3EE', 500: '#06B6D4' },
+                        gold: { 400: '#FFD700', 500: '#F9B233' },
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // Init theme immediately to prevent flash
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        /* Grid dot background */
+        .grid-bg {
+            background-image: radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.08) 1px, transparent 0);
+            background-size: 32px 32px;
+        }
+
+        /* Glass panels */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .dark .glass {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-light {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .dark .glass-light {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Golden ray comet */
+        @keyframes rayTravel {
+            0% {
+                left: -4%;
+                opacity: 0;
+            }
+
+            3% {
+                opacity: 1;
+            }
+
+            97% {
+                opacity: 1;
+            }
+
+            100% {
+                left: 104%;
+                opacity: 0;
+            }
+        }
+
+        .ray-comet {
+            position: absolute;
+            width: 40px;
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, transparent, #F9B233, #FFD700);
+            box-shadow: 0 0 16px 4px rgba(255, 215, 0, 0.4), 0 0 40px 8px rgba(255, 215, 0, 0.15);
+            filter: blur(0.5px);
+            animation: rayTravel 8s ease-in-out infinite;
+            z-index: 10;
+        }
+
+        .ray-comet::after {
+            content: '';
+            position: absolute;
+            right: -4px;
+            top: -3px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #FFD700;
+            box-shadow: 0 0 12px 4px rgba(255, 215, 0, 0.6);
+        }
+
+        /* Node glow */
+        @keyframes nodeGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 transparent;
+            }
+
+            50% {
+                box-shadow: 0 0 24px 6px rgba(255, 215, 0, 0.25);
+            }
+        }
+
+        .node-active {
+            animation: nodeGlow 1.2s ease-in-out;
+            border-color: rgba(255, 215, 0, 0.5) !important;
+        }
+
+        .node-active .node-icon {
+            color: #FFD700 !important;
+            filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.6));
+        }
+
+        /* Ripple */
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        .ripple {
+            animation: ripple 0.6s ease-out forwards;
+        }
+
+        /* Segment pulse */
+        @keyframes segPulse {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 200% 50%;
+            }
+        }
+
+        .seg-active {
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.1), rgba(255, 215, 0, 0.5), rgba(0, 0, 0, 0.1)) !important;
+            background-size: 200% 100%;
+            animation: segPulse 0.8s ease-out;
+        }
+
+        .dark .seg-active {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 215, 0, 0.5), rgba(255, 255, 255, 0.1)) !important;
+            background-size: 200% 100%;
+        }
+
+        /* Preview fade */
+        .preview-card {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* State machine pulse */
+        @keyframes smPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.08);
+            }
+        }
+
+        .sm-active {
+            animation: smPulse 0.6s ease-in-out;
+            background: rgba(34, 211, 238, 0.15) !important;
+            border-color: rgba(34, 211, 238, 0.5) !important;
+            color: #22D3EE !important;
+        }
+
+        /* Trust tooltip */
+        .trust-tip {
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.2s;
+        }
+
+        .trust-badge:hover .trust-tip {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+
+        /* Particle */
+        @keyframes particleFade {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) scale(0);
+            }
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: #FFD700;
+            pointer-events: none;
+            animation: particleFade 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body class="bg-white text-gray-900 dark:bg-black dark:text-gray-100 grid-bg transition-colors duration-300">
+
+    <!-- Navbar -->
+    <header
+        class="backdrop-blur-xl bg-white/80 border-b border-gray-200 dark:bg-black/80 dark:border-gray-800 sticky top-0 z-50 transition-colors">
+        <div class="container mx-auto px-8 py-4 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-3">
+                <img src="images/Gemini_Generated_Image_fn3u6efn3u6efn3u2122.png" alt="JurisGenie"
+                    class="w-10 h-10 rounded-full shadow-sm">
+                <span class="text-2xl font-bold text-gray-900 dark:text-white">JurisGenie</span>
+            </a>
+
+            <nav class="hidden md:flex gap-8 font-medium text-gray-600 dark:text-gray-400 text-sm">
+                <a href="index.html" class="text-cyan-600 dark:text-cyan-400 font-semibold">Home</a>
+                <a href="product.html" class="hover:text-cyan-600 dark:hover:text-cyan-400 transition">Product</a>
+                <a href="why-world.html" class="hover:text-cyan-600 dark:hover:text-cyan-400 transition">Why World Use This</a>
+                <a href="about.html" class="hover:text-cyan-600 dark:hover:text-cyan-400 transition">About</a>
+            </nav>
+
+            <div class="flex items-center gap-4" id="auth-nav-container">
+                <button id="theme-toggle"
+                    class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition">
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+                <a href="/pro" onclick="requireAuth(event)"
+                    class="hidden md:inline-block bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold px-5 py-2 rounded-xl shadow-lg shadow-cyan-500/20 hover:scale-105 transition mr-4">
+                    Try Pro UI →
+                </a>
+                <a href="signup.html" id="nav-signup-link"
+                    class="hidden md:inline-block border border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300 px-5 py-2 rounded-xl hover:border-cyan-500 hover:text-cyan-500 dark:hover:text-cyan-400 transition">
+                    Sign up
+                </a>
+                <button id="menu-btn"
+                    class="md:hidden p-2 rounded-md text-gray-500 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu"
+        class="fixed inset-0 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+        <div id="mobile-overlay" class="absolute inset-0 bg-black/60"></div>
+        <aside class="relative w-72 h-full bg-white dark:bg-black p-6 shadow-xl">
+            <button id="mobile-close" class="absolute top-4 right-4 text-gray-500 dark:text-gray-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <nav class="mt-8 flex flex-col gap-4">
+                <a href="index.html" class="text-lg text-cyan-600 dark:text-cyan-400 font-semibold">Home</a>
+                <a href="product.html"
+                    class="text-lg text-gray-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400">Product</a>
+                <a href="why-world.html"
+                    class="text-lg text-gray-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400">Why
+                    World Use This</a>
+                <a href="about.html"
+                    class="text-lg text-gray-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400">About</a>
+                <a href="/pro" onclick="requireAuth(event)"
+                    class="mt-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold px-4 py-2 rounded-lg text-center shadow-md">Try
+                    Pro UI →</a>
+                <a href="signup.html"
+                    class="mt-2 border border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300 font-semibold px-4 py-2 rounded-lg text-center">Sign
+                    up</a>
+            </nav>
+        </aside>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- HERO SECTION — INFRASTRUCTURE PIPELINE      -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section class="relative overflow-hidden">
+        <!-- Gradient backdrop -->
+        <div
+            class="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-black dark:via-[#090b10] dark:to-[#110e17] transition-colors">
+        </div>
+        <div class="absolute inset-0 grid-bg opacity-40"></div>
+        <!-- Floating gradient orbs -->
+        <div class="absolute top-20 left-10 w-72 h-72 bg-cyan-400/20 dark:bg-cyan-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-400/20 dark:bg-purple-500/10 rounded-full blur-3xl">
+        </div>
+
+        <div class="container mx-auto px-6 py-20 relative z-10">
+
+            <!-- Headline -->
+            <div class="text-center mb-16 max-w-4xl mx-auto">
+                <p class="text-gold-500 font-mono text-xs tracking-[0.3em] uppercase mb-5">⬡ Deterministic Legal
+                    Global Legal Infrastructure</p>
+                <h1 class="text-4xl md:text-6xl font-extrabold leading-tight tracking-tight">
+                    <span
+                        class="bg-gradient-to-r from-gray-900 via-cyan-600 to-cyan-500 dark:from-white dark:via-cyan-200 dark:to-cyan-400 bg-clip-text text-transparent">
+                        Stop Signing Blindly.
+                    </span>
+                    <br />
+                    <span class="bg-gradient-to-r from-gold-500 to-orange-500 bg-clip-text text-transparent">
+                        Execute Contracts Deterministically.
+                    </span>
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400 mt-6 text-lg max-w-2xl mx-auto leading-relaxed">
+                    Transform unstructured legal documents into verifiable, executable contract state machines — with AI
+                    extraction, human review, and blockchain settlement.
+                </p>
+                <div class="flex justify-center gap-4 mt-8">
+                    <a href="javascript:void(0)" onclick="requireAuth('upload.html')"
+                        class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-cyan-500/20 hover:scale-105 transition text-lg">
+                        Analyze a Document
+                    </a>
+                    <a href="product.html"
+                        class="border border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300 px-8 py-3.5 rounded-xl font-semibold hover:border-cyan-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition text-lg">
+                        See How It Works
+                    </a>
+                </div>
+
+                <!-- Advanced Intelligence Button -->
+                <div class="flex flex-col items-center mt-10">
+                    <a href="/pro" onclick="requireAuth(event)"
+                        class="group relative inline-flex items-center gap-3 px-10 py-4 bg-navy-900/50 dark:bg-black border border-gold-500/30 rounded-2xl text-gold-500 font-bold hover:bg-gold-500 hover:text-navy-900 transition-all duration-300 shadow-2xl shadow-gold-500/10">
+                        <span class="flex h-3 w-3 relative">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-gold-500"></span>
+                        </span>
+                        <span>Advanced 8-Layered Intelligence (Start Free Trial) →</span>
+                    </a>
+                    <p class="mt-3 text-sm text-gold-500/60 font-medium animate-pulse">
+                        Click here to explore the expert analysis suite
+                    </p>
+                </div>
+            </div>
+
+            <!-- ════════ PIPELINE VISUALIZATION ════════ -->
+            <div class="relative max-w-6xl mx-auto" id="pipeline-container">
+
+                <!-- Connecting line (behind nodes) -->
+                <div class="absolute top-10 left-[6%] right-[6%] h-[2px] bg-gray-300 dark:bg-gray-800/60 hidden md:block"
+                    id="pipeline-line">
+                    <div class="ray-comet" id="ray-comet"></div>
+                </div>
+                <!-- Segment overlays for pulse effect -->
+                <div class="absolute top-10 left-[6%] right-[6%] h-[2px] hidden md:flex" id="segments-container">
+                </div>
+
+                <!-- Particle container -->
+                <div id="particle-container" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+
+                <!-- Pipeline Nodes -->
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3" id="pipeline-nodes">
+
+                    <div class="pipeline-node flex flex-col items-center text-center group cursor-pointer" data-idx="0">
+                        <div
+                            class="node-box glass-light rounded-2xl p-3 w-full transition-all duration-300 hover:-translate-y-1 hover:border-gold-400/30 relative">
+                            <div class="ripple-anchor absolute inset-0 rounded-2xl pointer-events-none overflow-hidden">
+                            </div>
+                            <div class="node-icon text-orange-400 mb-2 transition-all mx-auto w-7 h-7">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+                                    <polyline points="14,2 14,8 20,8" />
+                                </svg>
+                            </div>
+                            <h4 class="text-[10px] font-bold text-white leading-tight">PDF Ingestion</h4>
+                            <p
+                                class="node-desc text-[8px] text-gray-500 mt-1 leading-tight opacity-0 transition-opacity">
+                                Extracts structured sections from legal documents.</p>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-node flex flex-col items-center text-center group cursor-pointer" data-idx="1">
+                        <div
+                            class="node-box glass-light rounded-2xl p-3 w-full transition-all duration-300 hover:-translate-y-1 hover:border-gold-400/30 relative">
+                            <div class="ripple-anchor absolute inset-0 rounded-2xl pointer-events-none overflow-hidden">
+                            </div>
+                            <div class="node-icon text-purple-400 mb-2 transition-all mx-auto w-7 h-7">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path
+                                        d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7Z" />
+                                    <path d="M10 21h4" />
+                                </svg>
+                            </div>
+                            <h4 class="text-[10px] font-bold text-white leading-tight">AI Annotation</h4>
+                            <p
+                                class="node-desc text-[8px] text-gray-500 mt-1 leading-tight opacity-0 transition-opacity">
+                                Identifies clauses, parties, obligations.</p>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-node flex flex-col items-center text-center group cursor-pointer" data-idx="2">
+                        <div
+                            class="node-box glass-light rounded-2xl p-3 w-full transition-all duration-300 hover:-translate-y-1 hover:border-gold-400/30 relative">
+                            <div class="ripple-anchor absolute inset-0 rounded-2xl pointer-events-none overflow-hidden">
+                            </div>
+                            <div class="node-icon text-yellow-400 mb-2 transition-all mx-auto w-7 h-7">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                    <circle cx="9" cy="7" r="4" />
+                                    <path d="m16 11 2 2 4-4" />
+                                </svg>
+                            </div>
+                            <h4 class="text-[10px] font-bold text-white leading-tight">Human Review</h4>
+                            <p
+                                class="node-desc text-[8px] text-gray-500 mt-1 leading-tight opacity-0 transition-opacity">
+                                AI suggestions require human confirmation.</p>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-node flex flex-col items-center text-center group cursor-pointer" data-idx="3">
+                        <div
+                            class="node-box glass-light rounded-2xl p-3 w-full transition-all duration-300 hover:-translate-y-1 hover:border-gold-400/30 relative">
+                            <div class="ripple-anchor absolute inset-0 rounded-2xl pointer-events-none overflow-hidden">
+                            </div>
+                            <div class="node-icon text-blue-400 mb-2 transition-all mx-auto w-7 h-7">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3" />
+                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                                    <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
+                                </svg>
+                            </div>
+                            <h4 class="text-[10px] font-bold text-white leading-tight">Typed Contract</h4>
+                            <p
+                                class="node-desc text-[8px] text-gray-500 mt-1 leading-tight opacity-0 transition-opacity">
+                                Canonical contract data model.</p>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-node flex flex-col items-center text-center group cursor-pointer" data-idx="4">
+                        <div
+                            class="node-box glass-light rounded-2xl p-3 w-full transition-all duration-300 hover:-translate-y-1 hover:border-gold-400/30 relative">
+                            <div class="ripple-anchor absolute inset-0 rounded-2xl pointer-events-none overflow-hidden">
+                            </div>
+                            <div class="node-icon text-emerald-400 mb-2 transition-all mx-auto w-7 h-7">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                                    <path d="m9 12 2 2 4-4" />
+                                </svg>
+                            </div>
+                            <h4 class="text-[10px] font-bold text-white leading-tight">Compliance</h4>
+                            <p
+                                class="node-desc text-[8px] text-gray-500 mt-1 leading-tight opacity-0 transition-opacity">
+                                Evaluates regulatory rules.</p>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-node flex flex-col items-center text-center group cursor-pointer" data-idx="5">
+                        <div
+                            class="node-box glass-light rounded-2xl p-3 w-full transition-all duration-300 hover:-translate-y-1 hover:border-gold-400/30 relative">
+                            <div class="ripple-anchor absolute inset-0 rounded-2xl pointer-events-none overflow-hidden">
+                            </div>
+                            <div class="node-icon text-cyan-400 mb-2 transition-all mx-auto w-7 h-7">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <polygon points="5,3 19,12 5,21" />
+                                </svg>
+                            </div>
+                            <h4 class="text-[10px] font-bold text-white leading-tight">Execution Engine</h4>
+                            <p
+                                class="node-desc text-[8px] text-gray-500 mt-1 leading-tight opacity-0 transition-opacity">
+                                Event-driven state machine.</p>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-node flex flex-col items-center text-center group cursor-pointer" data-idx="6">
+                        <div
+                            class="node-box glass-light rounded-2xl p-3 w-full transition-all duration-300 hover:-translate-y-1 hover:border-gold-400/30 relative">
+                            <div class="ripple-anchor absolute inset-0 rounded-2xl pointer-events-none overflow-hidden">
+                            </div>
+                            <div class="node-icon text-teal-400 mb-2 transition-all mx-auto w-7 h-7">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <polyline points="23,4 23,10 17,10" />
+                                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                                </svg>
+                            </div>
+                            <h4 class="text-[10px] font-bold text-white leading-tight">Deterministic Replay</h4>
+                            <p
+                                class="node-desc text-[8px] text-gray-500 mt-1 leading-tight opacity-0 transition-opacity">
+                                Recomputes for verification.</p>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-node flex flex-col items-center text-center group cursor-pointer" data-idx="7">
+                        <div
+                            class="node-box glass-light rounded-2xl p-3 w-full transition-all duration-300 hover:-translate-y-1 hover:border-gold-400/30 relative">
+                            <div class="ripple-anchor absolute inset-0 rounded-2xl pointer-events-none overflow-hidden">
+                            </div>
+                            <div class="node-icon text-violet-400 mb-2 transition-all mx-auto w-7 h-7">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                                </svg>
+                            </div>
+                            <h4 class="text-[10px] font-bold text-white leading-tight">Blockchain Anchor</h4>
+                            <p
+                                class="node-desc text-[8px] text-gray-500 mt-1 leading-tight opacity-0 transition-opacity">
+                                Immutable on-chain proof.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ════════ TRUST BADGES ════════ -->
+            <div class="flex flex-wrap justify-center gap-3 mt-14 max-w-4xl mx-auto">
+                <div class="trust-badge relative">
+                    <span
+                        class="px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold tracking-wider cursor-default">VERIFIED</span>
+                    <span
+                        class="trust-tip absolute -top-8 left-1/2 -translate-x-1/2 bg-navy-800 border border-gray-700 text-[9px] text-gray-300 px-2 py-1 rounded whitespace-nowrap shadow-xl">Contract
+                        state verified through deterministic replay</span>
+                </div>
+                <div class="trust-badge relative">
+                    <span
+                        class="px-3 py-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/10 text-cyan-400 text-[10px] font-mono font-bold tracking-wider cursor-default">REPLAY
+                        SAFE</span>
+                    <span
+                        class="trust-tip absolute -top-8 left-1/2 -translate-x-1/2 bg-navy-800 border border-gray-700 text-[9px] text-gray-300 px-2 py-1 rounded whitespace-nowrap shadow-xl">Same
+                        inputs always produce the same output</span>
+                </div>
+                <div class="trust-badge relative">
+                    <span
+                        class="px-3 py-1.5 rounded-lg border border-blue-500/20 bg-blue-500/10 text-blue-400 text-[10px] font-mono font-bold tracking-wider cursor-default">HASH
+                        MATCH</span>
+                    <span
+                        class="trust-tip absolute -top-8 left-1/2 -translate-x-1/2 bg-navy-800 border border-gray-700 text-[9px] text-gray-300 px-2 py-1 rounded whitespace-nowrap shadow-xl">Recomputed
+                        hash matches stored canonical hash</span>
+                </div>
+                <div class="trust-badge relative">
+                    <span
+                        class="px-3 py-1.5 rounded-lg border border-amber-500/20 bg-amber-500/10 text-amber-400 text-[10px] font-mono font-bold tracking-wider cursor-default">HUMAN
+                        CONFIRMED</span>
+                    <span
+                        class="trust-tip absolute -top-8 left-1/2 -translate-x-1/2 bg-navy-800 border border-gray-700 text-[9px] text-gray-300 px-2 py-1 rounded whitespace-nowrap shadow-xl">All
+                        AI annotations confirmed by a human operator</span>
+                </div>
+                <div class="trust-badge relative">
+                    <span
+                        class="px-3 py-1.5 rounded-lg border border-purple-500/20 bg-purple-500/10 text-purple-400 text-[10px] font-mono font-bold tracking-wider cursor-default">ANCHOR
+                        VERIFIED</span>
+                    <span
+                        class="trust-tip absolute -top-8 left-1/2 -translate-x-1/2 bg-navy-800 border border-gray-700 text-[9px] text-gray-300 px-2 py-1 rounded whitespace-nowrap shadow-xl">Execution
+                        proof immutably stored on blockchain</span>
+                </div>
+            </div>
+
+            <!-- ════════ SYNCHRONIZED PREVIEW CARD ════════ -->
+            <div class="max-w-3xl mx-auto mt-16">
+                <div class="glass rounded-2xl overflow-hidden shadow-2xl shadow-black/30">
+                    <!-- Browser chrome -->
+                    <div class="flex items-center gap-2 px-4 py-2.5 bg-navy-800/80 border-b border-gray-700/50">
+                        <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-500/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-500/80"></span>
+                        <span class="flex-1 text-center text-gray-500 text-[10px] font-mono"
+                            id="preview-url">jurisgenie.com/analyze</span>
+                    </div>
+                    <!-- Preview content -->
+                    <div class="p-6 min-h-[280px]" id="preview-content">
+                        <!-- Default: Document Analysis -->
+                        <div id="preview-0" class="preview-card">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Recent Documents</p>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-gray-800">
+                                    <span class="text-orange-400 text-xs">📄</span><span
+                                        class="text-xs text-gray-300">Employment Contract</span>
+                                </div>
+                                <div class="flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-gray-800">
+                                    <span class="text-green-400 text-xs">📋</span><span
+                                        class="text-xs text-gray-300">Rental Agreement</span>
+                                </div>
+                                <div class="flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-gray-800">
+                                    <span class="text-blue-400 text-xs">🔒</span><span class="text-xs text-gray-300">NDA
+                                        — TechCorp</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- AI Annotation -->
+                        <div id="preview-1" class="preview-card hidden">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">AI Clause Extraction</p>
+                            <div class="space-y-2 text-xs">
+                                <div class="p-2 rounded-lg border border-purple-500/30 bg-purple-500/5"><span
+                                        class="text-purple-400 font-bold">§4.2 Non-Compete</span><span
+                                        class="text-gray-500 ml-2">— 24-month restriction detected</span></div>
+                                <div class="p-2 rounded-lg border border-amber-500/30 bg-amber-500/5"><span
+                                        class="text-amber-400 font-bold">§7.1 Termination</span><span
+                                        class="text-gray-500 ml-2">— 30-day notice period</span></div>
+                                <div class="p-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5"><span
+                                        class="text-emerald-400 font-bold">§2.1 Parties</span><span
+                                        class="text-gray-500 ml-2">— 2 parties identified</span></div>
+                            </div>
+                        </div>
+                        <!-- Human Review -->
+                        <div id="preview-2" class="preview-card hidden">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Human Review Gate</p>
+                            <div class="space-y-2">
+                                <div
+                                    class="flex items-center justify-between p-2 rounded-lg border border-gray-700 bg-white/5 text-xs">
+                                    <span class="text-gray-300">§4.2 Non-Compete Clause</span>
+                                    <div class="flex gap-2"><span
+                                            class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px]">Accept</span><span
+                                            class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold text-[10px]">Edit</span><span
+                                            class="px-2 py-0.5 rounded bg-red-500/20 text-red-400 font-bold text-[10px]">Reject</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex items-center justify-between p-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 text-xs">
+                                    <span class="text-gray-300">§7.1 Termination Notice ✓</span>
+                                    <span class="text-emerald-400 text-[10px] font-bold">CONFIRMED</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Typed Contract -->
+                        <div id="preview-3" class="preview-card hidden">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Typed Contract Core</p>
+                            <div
+                                class="bg-gray-100 dark:bg-black/40 rounded-lg p-3 font-mono text-[10px] text-cyan-600 dark:text-cyan-300/80 leading-relaxed">
+                                <span class="text-gray-500 dark:text-gray-600">{</span><br />
+                                &nbsp;&nbsp;<span class="text-purple-600 dark:text-purple-400">"title"</span>: <span
+                                    class="text-amber-600 dark:text-amber-300">"Employment Contract"</span>,<br />
+                                &nbsp;&nbsp;<span class="text-purple-600 dark:text-purple-400">"parties"</span>: [<span
+                                    class="text-amber-600 dark:text-amber-300">"TechCorp"</span>, <span
+                                    class="text-amber-600 dark:text-amber-300">"J.
+                                    Singh"</span>],<br />
+                                &nbsp;&nbsp;<span class="text-purple-600 dark:text-purple-400">"hash"</span>: <span
+                                    class="text-emerald-500 dark:text-emerald-400">"0x8fa4b9c1..."</span>,<br />
+                                &nbsp;&nbsp;<span class="text-purple-600 dark:text-purple-400">"state"</span>: <span
+                                    class="text-cyan-600 dark:text-cyan-400">"PENDING"</span><br />
+                                <span class="text-gray-500 dark:text-gray-600">}</span>
+                            </div>
+                        </div>
+                        <!-- Compliance -->
+                        <div id="preview-4" class="preview-card hidden">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Compliance Evaluation
+                            </p>
+                            <div class="space-y-2 text-xs">
+                                <div
+                                    class="flex justify-between p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+                                    <span class="text-gray-300">GDPR Consent</span><span
+                                        class="text-emerald-400 font-bold">PASS</span>
+                                </div>
+                                <div
+                                    class="flex justify-between p-2 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                                    <span class="text-gray-300">Liability Cap</span><span
+                                        class="text-amber-400 font-bold">REVIEW</span>
+                                </div>
+                                <div
+                                    class="flex justify-between p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+                                    <span class="text-gray-300">Termination Clause</span><span
+                                        class="text-emerald-400 font-bold">PASS</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Execution Engine (State Machine Demo) -->
+                        <div id="preview-5" class="preview-card hidden">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Execution Engine — State
+                                Transition</p>
+                            <div class="flex items-center justify-center gap-3 mb-4">
+                                <span
+                                    class="sm-node px-3 py-1.5 rounded-lg border border-gray-700 bg-white/5 text-[10px] font-mono font-bold text-gray-400"
+                                    data-sm="PENDING">PENDING</span>
+                                <span class="text-gray-600 text-xs">→</span>
+                                <span
+                                    class="sm-node px-3 py-1.5 rounded-lg border border-gray-700 bg-white/5 text-[10px] font-mono font-bold text-gray-400"
+                                    data-sm="ACTIVE">ACTIVE</span>
+                                <span class="text-gray-600 text-xs">→</span>
+                                <span
+                                    class="sm-node px-3 py-1.5 rounded-lg border border-gray-700 bg-white/5 text-[10px] font-mono font-bold text-gray-400"
+                                    data-sm="LATE">LATE</span>
+                                <span class="text-gray-600 text-xs">→</span>
+                                <span
+                                    class="sm-node px-3 py-1.5 rounded-lg border border-gray-700 bg-white/5 text-[10px] font-mono font-bold text-gray-400"
+                                    data-sm="TERMINATED">TERMINATED</span>
+                            </div>
+                            <div class="bg-gray-100 dark:bg-black/40 rounded-lg p-3 font-mono text-[10px] space-y-1">
+                                <p><span class="text-gray-500">Event:</span> <span
+                                        class="text-cyan-600 dark:text-cyan-400" id="sm-event">PAYMENT_RECEIVED</span>
+                                </p>
+                                <p><span class="text-gray-500">Payload:</span> <span
+                                        class="text-amber-600 dark:text-amber-300">{ amount:
+                                        1000 }</span></p>
+                                <p><span class="text-gray-500">State:</span> <span
+                                        class="text-emerald-500 dark:text-emerald-400" id="sm-state">PENDING →
+                                        ACTIVE</span></p>
+                                <p class="mt-2"><span class="text-gray-500">Hash:</span> <span
+                                        class="text-gold-500 dark:text-gold-400">0x4b5f...000000</span></p>
+                            </div>
+                            <div class="mt-2 text-center">
+                                <span
+                                    class="px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[9px] font-mono font-bold">REPLAY
+                                    SAFE</span>
+                            </div>
+                        </div>
+                        <!-- Replay -->
+                        <div id="preview-6" class="preview-card hidden">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Deterministic Replay
+                                Verification</p>
+                            <div class="space-y-2 text-xs">
+                                <div
+                                    class="flex justify-between p-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
+                                    <span class="text-gray-300">Hash Recomputation</span><span
+                                        class="text-emerald-400 font-bold">MATCH</span>
+                                </div>
+                                <div
+                                    class="flex justify-between p-2 rounded-lg border border-cyan-500/20 bg-cyan-500/5">
+                                    <span class="text-gray-300">Event Replay</span><span
+                                        class="text-cyan-400 font-bold">VERIFIED</span>
+                                </div>
+                                <div
+                                    class="flex justify-between p-2 rounded-lg border border-blue-500/20 bg-blue-500/5">
+                                    <span class="text-gray-300">Nondeterminism</span><span
+                                        class="text-blue-400 font-bold">NONE</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Blockchain -->
+                        <div id="preview-7" class="preview-card hidden">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Blockchain Settlement
+                            </p>
+                            <div class="space-y-2 text-xs">
+                                <div class="flex justify-between p-2 rounded-lg border border-gray-700 bg-white/5"><span
+                                        class="text-gray-400">Network</span><span class="text-white font-bold">Ethereum
+                                        Mainnet</span></div>
+                                <div class="flex justify-between p-2 rounded-lg border border-gray-700 bg-white/5"><span
+                                        class="text-gray-400">Block</span><span
+                                        class="text-white font-mono">18,563,042</span></div>
+                                <div class="flex justify-between p-2 rounded-lg border border-gray-700 bg-white/5"><span
+                                        class="text-gray-400">Tx ID</span><span
+                                        class="text-violet-400 font-mono">0x33cf852a...f91a</span></div>
+                            </div>
+                            <div class="mt-3 text-center">
+                                <span
+                                    class="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-mono font-bold">ANCHOR
+                                    CONFIRMED</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Architecture Explorer Section -->
+    <section id="architecture"
+        class="relative py-24 bg-gray-50 dark:bg-[#06080d] border-t border-gray-200 dark:border-gray-800 transition-colors">
+        <div class="container px-5 mx-auto">
+            <div class="flex flex-col text-center w-full mb-12">
+                <p class="text-cyan-600 dark:text-cyan-400 font-mono text-xs tracking-[0.3em] uppercase mb-3">⬡ Under
+                    the Hood</p>
+                <h2 class="sm:text-4xl text-3xl font-bold mb-4 text-gray-900 dark:text-white">Explore the JurisGenie
+                    Architecture</h2>
+                <p class="lg:w-2/3 mx-auto text-gray-600 dark:text-gray-400">Interact with the pipeline below to
+                    understand how unstructured contracts are transformed into deterministic state machines.</p>
+            </div>
+
+            <!-- Architecture Pipeline (Premium Vanilla JS) -->
+            <div id="architecture-pipeline-viz" 
+                class="w-full h-[600px] bg-white dark:bg-[#06080d] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-2xl relative flex flex-col lg:flex-row">
+                
+                <!-- Left: Graph Area -->
+                <div class="w-full lg:w-2/3 h-full relative bg-gray-50/50 dark:bg-[#0a0f1e]/50 border-r border-gray-200 dark:border-gray-800 overflow-hidden" id="viz-container">
+                    <!-- SVG Edges Layer -->
+                    <svg id="viz-svg" class="absolute inset-0 w-full h-full pointer-events-none z-10"></svg>
+                    <!-- Nodes Layer -->
+                    <div id="viz-nodes" class="absolute inset-0 w-full h-full z-20"></div>
+                </div>
+
+                <!-- Right: Details Panel -->
+                <div class="w-full lg:w-1/3 h-full p-8 flex flex-col bg-white/80 dark:bg-[#06080d]/80 overflow-y-auto backdrop-blur-sm z-30">
+                    <p class="text-cyan-600 dark:text-cyan-400 font-mono text-xs tracking-widest uppercase mb-2">Node Inspector</p>
+                    <h3 id="node-title" class="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+                        <i class="fas fa-microchip text-gold-500"></i>
+                        <span>Select a Node</span>
+                    </h3>
+                    <p id="node-desc" class="text-gray-600 dark:text-gray-400 mb-6 text-sm leading-relaxed">Click any node in the pipeline to explore its role in the legal infrastructure stack.</p>
+                    
+                    <div id="node-details" class="space-y-4 hidden">
+                        <div class="bg-gray-100 dark:bg-black/40 border border-gray-200 dark:border-gray-800 rounded-xl p-3">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Input</p>
+                            <p id="node-input" class="font-mono text-xs text-gray-800 dark:text-gray-300"></p>
+                        </div>
+                        <div class="bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-3">
+                            <p class="text-[10px] text-emerald-600 uppercase tracking-widest mb-1">Output</p>
+                            <p id="node-output" class="font-mono text-xs text-emerald-700 dark:text-emerald-400 font-semibold"></p>
+                        </div>
+                        <div class="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                            <div>
+                                <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Guarantees</p>
+                                <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-[10px] font-bold">
+                                    <i class="fas fa-check-circle"></i> <span id="node-guarantees"></span>
+                                </span>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Internal API</p>
+                                <code id="node-api" class="text-[9px] text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-2 py-1 rounded"></code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Try Pro Feature CTA -->
+            <div class="mt-12 text-center">
+                <button onclick="requireAuth('/pro/dashboard')" 
+                   class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-2xl font-bold shadow-xl shadow-blue-500/20 hover:scale-105 transition group">
+                    <i class="fas fa-sparkles"></i>
+                    <span>Try Pro Analysis for Free</span>
+                    <i class="fas fa-arrow-right group-hover:translate-x-1 transition"></i>
+                </button>
+                <p class="mt-4 text-xs text-gray-500 dark:text-gray-400 font-mono tracking-widest uppercase">
+                    ⬡ Signup Required for Professional Mode
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="relative py-24">
+        <div class="container px-5 mx-auto">
+            <div class="flex flex-col text-center w-full mb-12">
+                <h1 class="sm:text-3xl text-2xl font-bold mb-4 text-gray-900 dark:text-white">Contact Us</h1>
+                <p class="lg:w-2/3 mx-auto text-gray-600 dark:text-gray-400">Let's connect and make it happen.</p>
+            </div>
+            <div class="lg:w-1/2 md:w-2/3 mx-auto">
+                <form class="flex flex-wrap -m-2">
+                    <div class="p-2 w-1/2">
+                        <input type="text" placeholder="Name"
+                            class="w-full bg-gray-50 dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 p-3 outline-none transition text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500" />
+                    </div>
+                    <div class="p-2 w-1/2">
+                        <input type="email" placeholder="Email"
+                            class="w-full bg-gray-50 dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 p-3 outline-none transition text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500" />
+                    </div>
+                    <div class="p-2 w-full">
+                        <textarea placeholder="Message"
+                            class="w-full bg-gray-50 dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-gray-700 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 h-32 p-3 outline-none transition text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"></textarea>
+                    </div>
+                    <div class="p-2 w-full">
+                        <button
+                            class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3 rounded-xl shadow-lg shadow-cyan-500/20 hover:scale-105 transition font-bold">Send</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer
+        class="bg-gray-50/50 dark:bg-black/50 border-t border-gray-200 dark:border-gray-800/50 text-gray-600 dark:text-gray-400 py-8 px-10">
+        <div class="container mx-auto flex flex-col md:flex-row items-center justify-between">
+            <a class="flex items-center text-gray-900 dark:text-white font-bold text-xl">
+                <img class="w-10 h-10 rounded-full" src="images/Gemini_Generated_Image_fn3u6efn3u6efn3u2122.png"
+                    alt="logo">
+                <span class="ml-3">JurisGenie</span>
+            </a>
+            <p class="mt-4 md:mt-0 text-sm">© 2025 JurisGenie. All Rights Reserved.</p>
+            <div class="flex space-x-4 mt-4 md:mt-0">
+                <a href="#" class="hover:text-cyan-400 transition"><svg xmlns="http://www.w3.org/2000/svg" width="16"
+                        height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path
+                            d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951" />
+                    </svg></a>
+                <a href="#" class="hover:text-cyan-400 transition"><svg xmlns="http://www.w3.org/2000/svg" width="16"
+                        height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path
+                            d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z" />
+                    </svg></a>
+                <a href="#" class="hover:text-cyan-400 transition"><svg xmlns="http://www.w3.org/2000/svg" width="16"
+                        height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path
+                            d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334" />
+                    </svg></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Mobile menu
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileClose = document.getElementById('mobile-close');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        function openMobile() { mobileMenu.classList.remove('-translate-x-full'); }
+        function closeMobile() { mobileMenu.classList.add('-translate-x-full'); }
+        menuBtn?.addEventListener('click', openMobile);
+        mobileClose?.addEventListener('click', closeMobile);
+        mobileOverlay?.addEventListener('click', closeMobile);
+
+        // ═══════ PIPELINE ANIMATION ENGINE ═══════
+        const TOTAL_NODES = 8;
+        const NODE_DURATION = 1200; // ms per node
+        const CYCLE = TOTAL_NODES * NODE_DURATION;
+        let currentNode = -1;
+
+        const nodes = document.querySelectorAll('.pipeline-node');
+        const previewUrls = [
+            'jurisgenie.com/upload', 'jurisgenie.com/annotate', 'jurisgenie.com/review',
+            'jurisgenie.com/contract', 'jurisgenie.com/compliance', 'jurisgenie.com/execute',
+            'jurisgenie.com/verify', 'jurisgenie.com/anchor'
+        ];
+
+        // State machine animation for execution engine
+        const smSequence = [
+            { event: 'PAYMENT_RECEIVED', transition: 'PENDING → ACTIVE', active: 'ACTIVE' },
+            { event: 'DEADLINE_MISSED', transition: 'ACTIVE → LATE', active: 'LATE' },
+            { event: 'LATE_PAYMENT', transition: 'LATE → ACTIVE', active: 'ACTIVE' },
+            { event: 'TERMINATION_NOTICE', transition: 'ACTIVE → TERMINATED', active: 'TERMINATED' },
+        ];
+        let smIdx = 0;
+
+        function activateNode(idx) {
+            // Deactivate all
+            nodes.forEach(n => {
+                n.querySelector('.node-box').classList.remove('node-active');
+                n.querySelector('.node-desc').style.opacity = '0';
+            });
+
+            // Activate current node
+            const node = nodes[idx];
+            if (!node) return;
+            const box = node.querySelector('.node-box');
+            box.classList.add('node-active');
+            node.querySelector('.node-desc').style.opacity = '1';
+
+            // Ripple effect
+            const anchor = node.querySelector('.ripple-anchor');
+            const rippleEl = document.createElement('div');
+            rippleEl.className = 'absolute inset-0 rounded-2xl border-2 border-gold-400/30 ripple';
+            anchor.appendChild(rippleEl);
+            setTimeout(() => rippleEl.remove(), 600);
+
+            // Emit particles
+            emitParticles(box);
+
+            // Update preview
+            for (let i = 0; i < TOTAL_NODES; i++) {
+                const pEl = document.getElementById('preview-' + i);
+                if (pEl) pEl.classList.toggle('hidden', i !== idx);
+            }
+            document.getElementById('preview-url').textContent = previewUrls[idx] || 'jurisgenie.com';
+
+            // State machine animation on execution engine node
+            if (idx === 5) {
+                const seq = smSequence[smIdx % smSequence.length];
+                document.getElementById('sm-event').textContent = seq.event;
+                document.getElementById('sm-state').textContent = seq.transition;
+                document.querySelectorAll('.sm-node').forEach(n => {
+                    n.classList.remove('sm-active');
+                    if (n.dataset.sm === seq.active) n.classList.add('sm-active');
+                });
+                smIdx++;
+            }
+        }
+
+        function emitParticles(el) {
+            const rect = el.getBoundingClientRect();
+            const container = document.getElementById('particle-container');
+            const cRect = container.getBoundingClientRect();
+            for (let i = 0; i < 5; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = (rect.left - cRect.left + rect.width / 2 + (Math.random() - 0.5) * 20) + 'px';
+                p.style.top = (rect.top - cRect.top + rect.height / 2 + (Math.random() - 0.5) * 20) + 'px';
+                p.style.setProperty('--dx', (Math.random() - 0.5) * 30 + 'px');
+                p.style.setProperty('--dy', (Math.random() - 0.5) * 30 + 'px');
+                container.appendChild(p);
+                setTimeout(() => p.remove(), 500);
+            }
+        }
+
+        // Main loop
+        function tick() {
+            currentNode = (currentNode + 1) % TOTAL_NODES;
+            activateNode(currentNode);
+        }
+        tick(); // initial
+        setInterval(tick, NODE_DURATION);
+
+        // Node click → modal-like detail
+        nodes.forEach(node => {
+            node.addEventListener('click', () => {
+                const idx = parseInt(node.dataset.idx);
+                currentNode = idx;
+                activateNode(idx);
+            });
+        });
+
+        // Theme Toggle Logic
+        const themeBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+
+        function updateThemeIcons() {
+            if (document.documentElement.classList.contains('dark')) {
+                darkIcon.classList.add('hidden');
+                lightIcon.classList.remove('hidden');
+            } else {
+                lightIcon.classList.add('hidden');
+                darkIcon.classList.remove('hidden');
+            }
+        }
+
+        updateThemeIcons();
+        themeBtn?.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+            updateThemeIcons();
+        });
+    </script>
+    <!-- Pipeline Animation Engine (Vanilla JS) -->
+    <script>
+        (function() {
+            const STAGES = [
+                { id: 'upload', label: 'PDF Ingestion', icon: 'fa-file-pdf', x: 50, y: 10, desc: 'Securely ingests raw PDFs and extracts base text layer using advanced OCR.', input: 'Raw Contract PDF', output: 'Raw Text + Page Geometry', guarantees: 'Zero Data Logged, End-to-End Encrypted', api: 'POST /api/documents/upload', color: '#3b82f6' },
+                { id: 'ai', label: 'AI Annotation', icon: 'fa-brain', x: 50, y: 25, desc: 'Specialized Legal LLM identifies clauses, parties, obligations, and state variables.', input: 'Raw Text', output: 'Semantic JSON AST', guarantees: '99.9% Clause Recall', api: 'POST /api/analyze/extract', color: '#8b5cf6' },
+                { id: 'human', label: 'Human Review', icon: 'fa-user-check', x: 50, y: 40, desc: 'Domain experts verify AI annotations and resolve ambiguities before lock-in.', input: 'Semantic JSON AST', output: 'Verified Contract Object', guarantees: 'HITL Precision', api: 'PATCH /api/contracts/:id/review', color: '#a855f7' },
+                { id: 'typed', label: 'Typed Contract', icon: 'fa-code', x: 50, y: 55, desc: 'Creates the canonical Deterministic State Machine representing the contract log.', input: 'Verified Contract Object', output: 'Initial State Hash', guarantees: 'Strict Type Mapping', api: 'POST /api/contracts/compile', color: '#06b6d4' },
+                { id: 'compliance', label: 'Compliance Engine', icon: 'fa-shield-alt', x: 25, y: 70, desc: 'Runs static analysis checks against local regulations (e.g., GDPR, local labor laws).', input: 'Typed Contract Schema', output: 'Compliance Report', guarantees: 'Pre-execution Safety', api: 'GET /api/contracts/:id/compliance', color: '#f59e0b' },
+                { id: 'execution', label: 'Execution Engine', icon: 'fa-cogs', x: 75, y: 70, desc: 'Event-driven state machine that executes contract transitions deterministically.', input: 'Contract State Payload + Event', output: 'New State + Execution Hash', guarantees: 'Deterministic Transitions', api: 'POST /api/contracts/:id/execute', color: '#10b981' },
+                { id: 'replay', label: 'Deterministic Replay', icon: 'fa-history', x: 75, y: 82, desc: 'Re-evaluates the event ledger from genesis to ensure current state hash matches exactly.', input: 'Event Ledger Array', output: 'Reconstructed Hash', guarantees: 'Zero Nondeterminism', api: 'POST /api/contracts/:id/verify', color: '#22d3ee' },
+                { id: 'blockchain', label: 'Blockchain Anchor', icon: 'fa-link', x: 75, y: 94, desc: 'Anchors the cryptographic execution hash to a public ledger for immutable proof.', input: 'Execution Hash', output: 'Blockchain Tx ID', guarantees: 'Immutable Timestamping', api: 'POST /api/anchor', color: '#8b5cf6' }
+            ];
+
+            const EDGES = [
+                ['upload', 'ai'], ['ai', 'human'], ['human', 'typed'],
+                ['typed', 'compliance'], ['typed', 'execution'],
+                ['execution', 'replay'], ['replay', 'blockchain']
+            ];
+
+            const container = document.getElementById('viz-container');
+            const svgEl = document.getElementById('viz-svg');
+            const nodesEl = document.getElementById('viz-nodes');
+
+            function getAbsPos(x, y) {
+                const rect = container.getBoundingClientRect();
+                return { x: rect.width * x / 100, y: rect.height * y / 100 };
+            }
+
+            function render() {
+                if (!container || !svgEl || !nodesEl) return;
+                svgEl.innerHTML = '';
+                nodesEl.innerHTML = '';
+
+                // Draw Edges
+                EDGES.forEach(([fromId, toId]) => {
+                    const from = STAGES.find(s => s.id === fromId);
+                    const to = STAGES.find(s => s.id === toId);
+                    const p1 = getAbsPos(from.x, from.y);
+                    const p2 = getAbsPos(to.x, to.y);
+
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const d = `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`;
+                    line.setAttribute('d', d);
+                    line.setAttribute('stroke', 'currentColor');
+                    line.setAttribute('stroke-width', '2');
+                    line.setAttribute('class', 'text-gray-200 dark:text-gray-800');
+                    line.setAttribute('fill', 'none');
+                    svgEl.appendChild(line);
+
+                    // Add animated dash line
+                    const animLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    animLine.setAttribute('d', d);
+                    animLine.setAttribute('stroke', to.color);
+                    animLine.setAttribute('stroke-width', '2');
+                    animLine.setAttribute('stroke-dasharray', '8, 8');
+                    animLine.setAttribute('fill', 'none');
+                    
+                    const animate = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+                    animate.setAttribute('attributeName', 'stroke-dashoffset');
+                    animate.setAttribute('from', '100');
+                    animate.setAttribute('to', '0');
+                    animate.setAttribute('dur', '3s');
+                    animate.setAttribute('repeatCount', 'indefinite');
+                    animLine.appendChild(animate);
+                    svgEl.appendChild(animLine);
+                });
+
+                // Draw Nodes
+                STAGES.forEach(s => {
+                    const node = document.createElement('div');
+                    node.className = 'absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300 group';
+                    node.style.left = s.x + '%';
+                    node.style.top = s.y + '%';
+                    
+                    node.innerHTML = `
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-12 rounded-xl bg-white dark:bg-[#06080d] border-2 border-gray-200 dark:border-gray-800 flex items-center justify-center text-xl text-cyan-400 group-hover:border-cyan-500 group-hover:shadow-[0_0_20px_rgba(34,211,238,0.3)] transition-all">
+                                <i class="fas ${s.icon}"></i>
+                            </div>
+                            <div class="mt-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tighter whitespace-nowrap">${s.label}</div>
+                        </div>
+                    `;
+
+                    node.onclick = () => showDetails(s);
+                    nodesEl.appendChild(node);
+                });
+            }
+
+            function showDetails(s) {
+                document.getElementById('node-title').innerHTML = `<i class="fas ${s.icon} text-gold-500"></i> ${s.label}`;
+                document.getElementById('node-desc').textContent = s.desc;
+                document.getElementById('node-input').textContent = s.input;
+                document.getElementById('node-output').textContent = s.output;
+                document.getElementById('node-guarantees').textContent = s.guarantees;
+                document.getElementById('node-api').textContent = s.api;
+                document.getElementById('node-details').classList.remove('hidden');
+                
+                // Highlight active node
+                document.querySelectorAll('#viz-nodes > div').forEach(el => {
+                    const iconBox = el.querySelector('div > div');
+                    if (el.textContent.includes(s.label)) {
+                        iconBox.classList.add('border-cyan-500', 'shadow-[0_0_20px_rgba(34,211,238,0.3)]');
+                    } else {
+                        iconBox.classList.remove('border-cyan-500', 'shadow-[0_0_20px_rgba(34,211,238,0.3)]');
+                    }
+                });
+            }
+
+            window.addEventListener('resize', render);
+            // Initial render
+            setTimeout(render, 500);
+            
+            // Expose refresh
+            window.refreshViz = render;
+        })();
+    </script>
+    <script src="js/auth.js"></script>
+</body>
+
+</html>

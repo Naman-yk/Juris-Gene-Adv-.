@@ -25,6 +25,7 @@ interface ContractState {
     contracts: ContractSummary[];
     setActive: (c: ContractSummary | null) => void;
     setContracts: (c: ContractSummary[]) => void;
+    addContract: (c: ContractSummary) => void;
     loadDemoContracts: () => Promise<void>;
 }
 
@@ -70,11 +71,21 @@ export const useContractStore = create<ContractState>()(
             contracts: [],
             setActive: (c) => set({ active: c }),
             setContracts: (c) => set({ contracts: c }),
+            addContract: (c: ContractSummary) => {
+                const existing = get().contracts;
+                // Don't add duplicates
+                if (existing.find(e => e.id === c.id)) return;
+                set({ contracts: [...existing, c] });
+            },
             loadDemoContracts: async () => {
                 try {
                     const { fetchContracts } = await import('@/lib/api');
                     const data = await fetchContracts();
-                    set({ contracts: data });
+                    // Merge: keep any uploaded contracts that aren't in the fetched list
+                    const existing = get().contracts;
+                    const fetchedIds = new Set(data.map((d: ContractSummary) => d.id));
+                    const uploadedContracts = existing.filter(c => !fetchedIds.has(c.id));
+                    set({ contracts: [...data, ...uploadedContracts] });
                     return;
                 } catch {
                     // Backend not available
@@ -89,6 +100,7 @@ export const useContractStore = create<ContractState>()(
         { name: "jurisgenie-contract-store" }
     )
 );
+
 
 /* ─── UI Store ─── */
 

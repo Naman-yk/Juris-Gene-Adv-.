@@ -60,8 +60,9 @@ export default function NewContractPage() {
             const response = await uploadContract(file);
             const { contract } = response;
             
-            // Re-sync store to ensure the new contract is available in the UI list
-            await useContractStore.getState().loadDemoContracts();
+            // Add the new contract to the store so it's available on other pages
+            useContractStore.getState().addContract(contract as any);
+
 
             let step = 0;
             const interval = setInterval(() => {

@@ -1,4 +1,14 @@
 /** @type {import('next').NextConfig} */
+
+// Helper: ensure URL has protocol prefix
+function ensureProtocol(url) {
+    if (!url) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+}
+
+const backendUrl = ensureProtocol(process.env.BACKEND_URL || 'http://localhost:3001');
+
 const nextConfig = {
     reactStrictMode: true,
     basePath: '/pro',
@@ -10,7 +20,7 @@ const nextConfig = {
         return [
             {
                 source: '/api/:path*',
-                destination: `${process.env.BACKEND_URL || 'http://localhost:3001'}/:path*`,
+                destination: `${backendUrl}/:path*`,
             },
         ];
     },

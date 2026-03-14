@@ -61,3 +61,5 @@ envVarGroups:
         sync: false  # Set this manually in the Render dashboard
       - key: GEMINI_API_KEY
         sync: false  # Set this manually in the Render dashboard
+      - key: JWT_SECRET
+        sync: false  # Set this manually in the Render dashboard (optional, has fallback)

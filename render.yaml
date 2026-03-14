@@ -28,20 +28,22 @@ services:
     name: jurisgenie-backend
     env: node
     plan: free
-    buildCommand: npm install -g pnpm && pnpm install && pnpm --filter @jurisgenie/platform run build
+    buildCommand: npm install -g pnpm && pnpm install && pnpm --filter @jurisgenie/platform... run build
     startCommand: pnpm --filter @jurisgenie/platform run start
     envVars:
       - key: PORT
         value: 3001
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: 20
 
   # 3. Next.js Pro UI
   - type: web
     name: jurisgenie-pro
     env: node
     plan: free
-    buildCommand: npm install -g pnpm && pnpm install && pnpm --filter @jurisgenie/ui run build
+    buildCommand: npm install -g pnpm && pnpm install && pnpm --filter @jurisgenie/ui... run build
     startCommand: pnpm --filter @jurisgenie/ui run start
     envVars:
       - key: BACKEND_URL

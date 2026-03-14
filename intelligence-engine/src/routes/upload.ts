@@ -15,20 +15,25 @@ const router = express.Router();
 const uploadDir = path.join(__dirname, "..", "..", "uploads");
 if (!existsSync(uploadDir)) mkdirSync(uploadDir, { recursive: true });
 
+interface MulterRequest extends express.Request {
+  file?: any;
+}
+
 const storage = multer.diskStorage({
-  destination: (_, __, cb) => cb(null, uploadDir),
-  filename: (_, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+  destination: (_req: any, _file: any, cb: any) => cb(null, uploadDir),
+  filename: (_req: any, file: any, cb: any) => cb(null, `${Date.now()}-${file.originalname}`),
 });
 
 const upload = multer({ storage });
 
-router.post("/", authenticateToken, upload.single("file"), async (req, res) => {
+router.post("/", authenticateToken, upload.single("file"), async (req: express.Request, res: express.Response) => {
+  const mReq = req as MulterRequest;
   let text = "";
   let filePath = "";
 
   try {
-    if (req.file) {
-      filePath = req.file.path;
+    if (mReq.file) {
+      filePath = mReq.file.path;
       console.log("Reading PDF/File:", filePath);
 
       const dataBuffer = fs.readFileSync(filePath);

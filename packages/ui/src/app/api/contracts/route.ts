@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 
-const DEMO_CONTRACTS = [
+function ensureProtocol(url: string): string {
+    if (!url) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+}
+
+const BACKEND_URL = ensureProtocol(process.env.BACKEND_URL || 'http://localhost:3001');
+
+const FALLBACK_CONTRACTS = [
     {
         id: 'jg-001',
         title: 'SaaS License Agreement',
@@ -48,5 +56,21 @@ const DEMO_CONTRACTS = [
 ];
 
 export async function GET() {
-    return NextResponse.json(DEMO_CONTRACTS);
+    // Try real backend first
+    try {
+        const backendRes = await fetch(`${BACKEND_URL}/contracts`, {
+            headers: { 'Accept': 'application/json' },
+        });
+        if (backendRes.ok) {
+            const data = await backendRes.json();
+            if (Array.isArray(data) && data.length > 0) {
+                return NextResponse.json(data);
+            }
+        }
+    } catch (err) {
+        console.warn('[contracts route] Backend unavailable, using fallback:', String(err));
+    }
+
+    // Fallback to demo contracts only if backend is unreachable
+    return NextResponse.json(FALLBACK_CONTRACTS);
 }

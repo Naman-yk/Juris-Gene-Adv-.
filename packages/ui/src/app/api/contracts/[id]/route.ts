@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+function ensureProtocol(url: string): string {
+    if (!url) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+}
+
+const BACKEND_URL = ensureProtocol(process.env.BACKEND_URL || 'http://localhost:3001');
+
 const DEMO_CONTRACTS: Record<string, any> = {
     'jg-001': {
         id: 'jg-001',
@@ -56,8 +64,8 @@ const DEMO_CONTRACTS: Record<string, any> = {
     },
 };
 
-// Generate demo data for any unknown contract ID (from demo uploads)
-function getDemoContract(id: string) {
+// Generate fallback data for any unknown contract ID (from demo uploads)
+function getFallbackContract(id: string) {
     return {
         id,
         title: 'Uploaded Contract',
@@ -68,7 +76,7 @@ function getDemoContract(id: string) {
         state: 'DRAFTED',
         hash: '0x' + id.replace(/[^a-f0-9]/gi, '').padEnd(64, 'a'),
         updatedAt: new Date().toISOString().split('T')[0],
-        content: 'This is a demo contract created from an uploaded document. In a production environment with the backend service running, the full extracted text from your PDF would appear here along with AI-powered clause analysis, risk scoring, and entity extraction.\n\nThe JurisGenie pipeline processes documents through: PDF Extraction → OCR & Vision → Clause Parsing → Hash Generation → AI Annotation → Compliance Evaluation → State Machine Execution → Blockchain Anchoring.',
+        content: 'This is a fallback contract. The backend service may be temporarily unavailable.\n\nThe JurisGenie pipeline processes documents through: PDF Extraction → OCR & Vision → Clause Parsing → Hash Generation → AI Annotation → Compliance Evaluation → State Machine Execution → Blockchain Anchoring.',
         pages: 10,
         clauses: [
             { id: 'c1', type: 'payment', text: 'Payment terms are extracted from the uploaded document.' },
@@ -82,6 +90,20 @@ export async function GET(
     _request: NextRequest,
     { params }: { params: { id: string } }
 ) {
-    const contract = DEMO_CONTRACTS[params.id] || getDemoContract(params.id);
+    // Try real backend first
+    try {
+        const backendRes = await fetch(`${BACKEND_URL}/contracts/${params.id}`, {
+            headers: { 'Accept': 'application/json' },
+        });
+        if (backendRes.ok) {
+            const data = await backendRes.json();
+            return NextResponse.json(data);
+        }
+    } catch (err) {
+        console.warn(`[contracts/${params.id} route] Backend unavailable, using fallback:`, String(err));
+    }
+
+    // Fallback to demo data
+    const contract = DEMO_CONTRACTS[params.id] || getFallbackContract(params.id);
     return NextResponse.json(contract);
 }

@@ -53,7 +53,7 @@ async function processBatchQueue() {
         if (result.embeddings) {
 
             pendingEmbeddings.splice(0, BATCH_SIZE);
-            result.embeddings.forEach((emb, index) => {
+            result.embeddings.forEach((emb: any, index: number) => {
                 if (batch[index]) {
                     batch[index].resolve(emb.values);
                 }

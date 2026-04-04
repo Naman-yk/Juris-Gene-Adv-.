@@ -25,21 +25,13 @@ const backendTarget = ensureProtocol(process.env.BACKEND_URL || 'http://localhos
 console.log('[Gateway] PRO_UI_URL target:', proUiTarget);
 console.log('[Gateway] BACKEND_URL target:', backendTarget);
 
-// Route /pro to the Pro UI (Next.js)
-app.use('/pro', createProxyMiddleware({
-    target: proUiTarget,
-    changeOrigin: true,
-    secure: false, // Don't verify SSL certs for internal proxying
-    on: {
-        error: (err, _req, res) => {
-            console.error('[Proxy /pro] Error:', err.message);
-            if ('writeHead' in res) {
-                (res as any).writeHead(502, { 'Content-Type': 'text/plain' });
-                (res as any).end('Pro UI service is currently unavailable. Please try again later.');
-            }
-        },
-    },
-}));
+// Route /pro → redirect to Pro UI (proxying HTTPS→HTTPS is unreliable on Render free tier)
+app.use('/pro', (req, res) => {
+    const subPath = req.url === '/' ? '' : req.url;
+    const redirectUrl = `${proUiTarget}/pro${subPath}`;
+    console.log(`[Redirect /pro] → ${redirectUrl}`);
+    res.redirect(302, redirectUrl);
+});
 
 // Route /backend to the Platform Backend API
 app.use('/backend', createProxyMiddleware({

@@ -23,22 +23,49 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
         }
 
+        console.log(`[upload] Forwarding ${file.name} (${file.size} bytes) to ${BACKEND_URL}/contracts/upload`);
+
         const outForm = new FormData();
         outForm.append('file', file, file.name);
 
-        const backendRes = await fetch(`${BACKEND_URL}/contracts/upload`, {
-            method: 'POST',
-            body: outForm,
-        });
+        // 60s timeout to allow for Render free-tier cold starts
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 60000);
 
-        if (backendRes.ok) {
-            const data = await backendRes.json();
-            return NextResponse.json(data, { status: backendRes.status });
+        try {
+            const backendRes = await fetch(`${BACKEND_URL}/contracts/upload`, {
+                method: 'POST',
+                body: outForm,
+                signal: controller.signal,
+            });
+
+            clearTimeout(timeout);
+
+            const responseText = await backendRes.text();
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch {
+                console.error('[upload] Non-JSON response from backend:', responseText.substring(0, 500));
+                return NextResponse.json({ error: 'Backend returned non-JSON response', details: responseText.substring(0, 200) }, { status: 502 });
+            }
+
+            if (backendRes.ok) {
+                return NextResponse.json(data, { status: backendRes.status });
+            }
+
+            console.error('[upload] Backend error:', backendRes.status, data);
+            return NextResponse.json({ error: data.error || `Backend returned ${backendRes.status}`, details: data }, { status: backendRes.status });
+        } catch (fetchErr: any) {
+            clearTimeout(timeout);
+            if (fetchErr.name === 'AbortError') {
+                console.error('[upload] Backend request timed out after 60s');
+                return NextResponse.json({ error: 'Backend request timed out. The service may be starting up — please try again in 30 seconds.' }, { status: 504 });
+            }
+            throw fetchErr;
         }
-        
-        return NextResponse.json({ error: `Backend returned ${backendRes.status}` }, { status: backendRes.status });
     } catch (err) {
-        console.error('[upload route] Unexpected error:', err);
+        console.error('[upload] Unexpected error:', err);
         return NextResponse.json({ error: 'Upload proxy failed', details: String(err) }, { status: 500 });
     }
 }

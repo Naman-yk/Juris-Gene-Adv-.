@@ -83,10 +83,11 @@ export default function NewContractPage() {
                     }, 800);
                 }
             }, 800); // Faster fake animation time since backend already did the work
-        } catch (e) {
+        } catch (e: any) {
             console.error("Failed to upload document", e);
             setIsProcessing(false);
-            alert("Upload failed. Please check the backend connection.");
+            const msg = e?.message || String(e);
+            alert(`Upload failed: ${msg}`);
         }
     };
 
@@ -121,7 +122,7 @@ export default function NewContractPage() {
                                     type="file"
                                     id="file-upload"
                                     className="hidden"
-                                    accept="application/pdf"
+                                    accept=".pdf,.txt,.docx,.doc,.json"
                                     onChange={handleFileChange}
                                 />
                                 <Button asChild variant="outline">
@@ -144,10 +145,7 @@ export default function NewContractPage() {
                                 </div>
                             )}
                         </div>
-                        <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-md">
-                            <AlertCircle className="h-4 w-4" />
-                            <span>Mock Mode: For development, processing is simulated and no data leaves your browser.</span>
-                        </div>
+
                     </CardContent>
                 </Card>
             )}

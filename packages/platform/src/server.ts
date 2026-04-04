@@ -260,13 +260,22 @@ app.post('/contracts/upload', upload.single('file'), async (req: Request, res: R
         // Parse PDF text or fallback to utf-8 text representation
         let fileContent = '';
         if (req.file.mimetype === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf')) {
-            const { PDFParse } = require('pdf-parse');
-            const parser = new PDFParse({ data: req.file.buffer });
-            const data = await parser.getText();
-            await parser.destroy();
-            fileContent = data.text;
+            try {
+                const { PDFParse } = require('pdf-parse');
+                const parser = new PDFParse({ data: req.file.buffer });
+                const data = await parser.getText();
+                await parser.destroy();
+                fileContent = data.text || '';
+            } catch (pdfErr) {
+                console.warn('[upload] PDF parsing failed, using raw text fallback:', String(pdfErr));
+                fileContent = req.file.buffer.toString('utf-8');
+            }
         } else {
             fileContent = req.file.buffer.toString('utf-8');
+        }
+
+        if (!fileContent || fileContent.trim().length === 0) {
+            fileContent = `[Document uploaded: ${fileName}, ${req.file.size} bytes. Text extraction produced no readable content.]`;
         }
 
         const contractId = `jg-${Date.now().toString(36)}`;

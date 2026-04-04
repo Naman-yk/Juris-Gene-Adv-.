@@ -1,21 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(
-    _request: NextRequest,
-    { params }: { params: { id: string } }
-) {
-    const contractId = params.id;
-    return NextResponse.json({
-        contractId,
-        title: 'SaaS License Agreement',
-        contractHash: '0x716e1bc38f426dff03447f56cba26f89e9933262272df917e97fcc7553215510',
-        state: 'EXECUTED',
-        blockchainHash: '0xbc8h9i...',
-        transactionHash: '0xdemo123abc456def789',
-        blockNumber: 19847256,
-        network: 'ethereum-sepolia',
-        anchoredAt: '2025-06-01T10:00:20Z',
-        status: 'ANCHORED',
-        verified: true,
-    });
+function ensureProtocol(url: string): string {
+    if (!url) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+}
+
+const BACKEND_URL = ensureProtocol(process.env.BACKEND_URL || 'http://localhost:3001');
+
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+    try {
+        const reqInit: RequestInit = {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store'
+        };
+
+        const backendRes = await fetch(`${BACKEND_URL}/verify/${params.id}`, reqInit);
+        
+        if (backendRes.ok) {
+            return NextResponse.json(await backendRes.json());
+        }
+        return NextResponse.json({ error: `Backend returned ${backendRes.status}` }, { status: backendRes.status });
+    } catch (err) {
+        console.error('Backend unavailable:', String(err));
+        return NextResponse.json({ error: 'Backend API is unreachable' }, { status: 502 });
+    }
 }

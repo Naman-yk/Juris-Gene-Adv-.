@@ -1,25 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(
-    _request: NextRequest,
-    { params }: { params: { id: string } }
-) {
-    return NextResponse.json({
-        contractId: params.id,
-        currentState: 'EXECUTED',
-        stateHash: '0x716e1bc38f426dff03447f56cba26f89e9933262272df917e97fcc7553215510',
-        nodes: [
-            { id: 'drafted', state: 'DRAFTED', isActive: false, position: { x: 100, y: 200 } },
-            { id: 'reviewed', state: 'REVIEWED', isActive: false, position: { x: 300, y: 200 } },
-            { id: 'approved', state: 'APPROVED', isActive: false, position: { x: 500, y: 200 } },
-            { id: 'executed', state: 'EXECUTED', isActive: true, position: { x: 700, y: 200 } },
-            { id: 'terminated', state: 'TERMINATED', isActive: false, position: { x: 500, y: 400 } },
-        ],
-        transitions: [
-            { id: 't1', source: 'drafted', target: 'reviewed', label: 'Submit for Review', event: 'REVIEW', rule: 'All parties identified' },
-            { id: 't2', source: 'reviewed', target: 'approved', label: 'Approve', event: 'APPROVE', rule: 'Compliance check passed' },
-            { id: 't3', source: 'approved', target: 'executed', label: 'Execute', event: 'EXECUTE', rule: 'All signatures collected' },
-            { id: 't4', source: 'executed', target: 'terminated', label: 'Terminate', event: 'TERMINATE', rule: '90-day notice given' },
-        ],
-    });
+function ensureProtocol(url: string): string {
+    if (!url) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+}
+
+const BACKEND_URL = ensureProtocol(process.env.BACKEND_URL || 'http://localhost:3001');
+
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+    try {
+        const reqInit: RequestInit = {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store'
+        };
+
+        const backendRes = await fetch(`${BACKEND_URL}/contracts/${params.id}/state-machine`, reqInit);
+        
+        if (backendRes.ok) {
+            return NextResponse.json(await backendRes.json());
+        }
+        return NextResponse.json({ error: `Backend returned ${backendRes.status}` }, { status: backendRes.status });
+    } catch (err) {
+        console.error('Backend unavailable:', String(err));
+        return NextResponse.json({ error: 'Backend API is unreachable' }, { status: 502 });
+    }
 }

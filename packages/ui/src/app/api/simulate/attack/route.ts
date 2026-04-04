@@ -1,18 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
-    const body = await request.json().catch(() => ({}));
-    const contractId = body.contractId || 'jg-001';
-    const attackType = body.attackType || 'replay';
+function ensureProtocol(url: string): string {
+    if (!url) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+}
 
-    return NextResponse.json({
-        success: false,
-        reason: `Attack blocked: ${attackType} attack detected and prevented by deterministic state validation.`,
-        rule: 'State hash mismatch — replay attack cannot alter the canonical execution path.',
-        stateHash: '0x716e1bc38f426dff03447f56cba26f89e9933262272df917e97fcc7553215510',
-        blockchainHash: '0xbc8h9i...',
-        contractId,
-        attackType,
-        timestamp: new Date().toISOString(),
-    });
+const BACKEND_URL = ensureProtocol(process.env.BACKEND_URL || 'http://localhost:3001');
+
+export async function POST(request: NextRequest) {
+    try {
+        const body = await request.json().catch(() => ({}));
+        const reqInit: RequestInit = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(body)
+        };
+
+        const backendRes = await fetch(`${BACKEND_URL}/simulate/attack`, reqInit);
+        
+        if (backendRes.ok) {
+            return NextResponse.json(await backendRes.json());
+        }
+        return NextResponse.json({ error: `Backend returned ${backendRes.status}` }, { status: backendRes.status });
+    } catch (err) {
+        console.error('Backend unavailable:', String(err));
+        return NextResponse.json({ error: 'Backend API is unreachable' }, { status: 502 });
+    }
 }

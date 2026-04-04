@@ -1,15 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+function ensureProtocol(url: string): string {
+    if (!url) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+}
+
+const BACKEND_URL = ensureProtocol(process.env.BACKEND_URL || 'http://localhost:3001');
+
 export async function POST(request: NextRequest) {
-    const body = await request.json().catch(() => ({}));
-    const contractId = body.contractId || 'jg-001';
-    
-    return NextResponse.json({
-        executionHash: '0x716e1bc38f426dff03447f56cba26f89e9933262272df917e97fcc7553215510',
-        anchorStatus: 'ANCHORED',
-        network: 'ethereum-sepolia',
-        txHash: '0xdemo' + Math.random().toString(36).substring(2, 15),
-        blockNumber: 19847256 + Math.floor(Math.random() * 100),
-        verifiedAt: new Date().toISOString(),
-    });
+    try {
+        const body = await request.json().catch(() => ({}));
+        const reqInit: RequestInit = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(body)
+        };
+
+        const backendRes = await fetch(`${BACKEND_URL}/blockchain/anchor`, reqInit);
+        
+        if (backendRes.ok) {
+            return NextResponse.json(await backendRes.json());
+        }
+        return NextResponse.json({ error: `Backend returned ${backendRes.status}` }, { status: backendRes.status });
+    } catch (err) {
+        console.error('Backend unavailable:', String(err));
+        return NextResponse.json({ error: 'Backend API is unreachable' }, { status: 502 });
+    }
 }

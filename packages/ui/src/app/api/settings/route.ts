@@ -1,14 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-const defaultSettings = {
-    aiModel: 'gemini-2.5-flash',
-    complianceRuleset: 'standard-v2',
-    blockchainNetwork: 'ethereum-sepolia',
-    webhookUrl: '',
-    autoAnchor: true,
-    notificationsEnabled: true,
-};
+function ensureProtocol(url: string): string {
+    if (!url) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+}
 
-export async function GET(_request: NextRequest) {
-    return NextResponse.json(defaultSettings);
+const BACKEND_URL = ensureProtocol(process.env.BACKEND_URL || 'http://localhost:3001');
+
+export async function GET() {
+    try {
+        const reqInit: RequestInit = {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store'
+        };
+
+        const backendRes = await fetch(`${BACKEND_URL}/settings`, reqInit);
+        
+        if (backendRes.ok) {
+            return NextResponse.json(await backendRes.json());
+        }
+        return NextResponse.json({ error: `Backend returned ${backendRes.status}` }, { status: backendRes.status });
+    } catch (err) {
+        console.error('Backend unavailable:', String(err));
+        return NextResponse.json({ error: 'Backend API is unreachable' }, { status: 502 });
+    }
 }

@@ -1,9 +1,18 @@
 const fs = require('fs');
 const path = require('path');
 
-const proUiUrl = process.env.PRO_UI_URL || 'http://localhost:3000';
-const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+// Render's `property: host` gives bare hostnames without protocol
+function ensureProtocol(url) {
+    if (!url) return url;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+}
 
+const proUiUrl = ensureProtocol(process.env.PRO_UI_URL || 'http://localhost:3000');
+const backendUrl = ensureProtocol(process.env.BACKEND_URL || 'http://localhost:3001');
+
+console.log('[replace-urls] PRO_UI_URL:', proUiUrl);
+console.log('[replace-urls] BACKEND_URL:', backendUrl);
 const assetDirs = [
     path.join(__dirname, 'intelligence-engine', 'Frontend', 'assets'),
     path.join(__dirname, 'Frontend', 'assets')

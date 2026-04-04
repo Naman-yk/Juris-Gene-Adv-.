@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { BACKEND_URL } from '@/lib/backend-url';
 
-function ensureProtocol(url: string): string {
-    if (!url) return url;
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `https://${url}`;
-}
-
-const BACKEND_URL = ensureProtocol(process.env.BACKEND_URL || 'http://localhost:3001');
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
     try {

@@ -1,17 +1,9 @@
 import { NextResponse } from 'next/server';
-
-function ensureProtocol(url: string): string {
-    if (!url) return url;
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `https://${url}`;
-}
-
-const RAW_BACKEND = process.env.BACKEND_URL;
-const BACKEND_URL = ensureProtocol(RAW_BACKEND || 'http://localhost:3001');
+import { BACKEND_URL } from '@/lib/backend-url';
 
 export async function GET() {
     const diagnostics: Record<string, any> = {
-        raw_BACKEND_URL: RAW_BACKEND ?? '(undefined)',
+        raw_BACKEND_URL: process.env.BACKEND_URL ?? '(undefined)',
         resolved_BACKEND_URL: BACKEND_URL,
         NODE_ENV: process.env.NODE_ENV,
         timestamp: new Date().toISOString(),
@@ -32,7 +24,6 @@ export async function GET() {
     } catch (err: any) {
         diagnostics.backend_ok = false;
         diagnostics.backend_error = err.message || String(err);
-        diagnostics.backend_error_name = err.name;
         diagnostics.backend_error_cause = err.cause ? String(err.cause) : undefined;
     }
 

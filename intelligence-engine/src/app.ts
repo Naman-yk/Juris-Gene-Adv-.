@@ -29,6 +29,7 @@ console.log('[Gateway] BACKEND_URL target:', backendTarget);
 app.use('/pro', createProxyMiddleware({
     target: proUiTarget,
     changeOrigin: true,
+    secure: false, // Don't verify SSL certs for internal proxying
     on: {
         error: (err, _req, res) => {
             console.error('[Proxy /pro] Error:', err.message);
@@ -44,6 +45,7 @@ app.use('/pro', createProxyMiddleware({
 app.use('/backend', createProxyMiddleware({
     target: backendTarget,
     changeOrigin: true,
+    secure: false, // Don't verify SSL certs for internal proxying
     pathRewrite: {
         '^/backend': '', // Remove /backend prefix when forwarding
     },

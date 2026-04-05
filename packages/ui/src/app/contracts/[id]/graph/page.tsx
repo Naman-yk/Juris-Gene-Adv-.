@@ -62,6 +62,17 @@ export default function KnowledgeGraphPage({ params }: { params: { id: string } 
 
     const fgRef = useRef<any>(null);
 
+    // Center camera on graph after mount
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (fgRef.current) {
+                fgRef.current.centerAt(0, 50, 300);
+                fgRef.current.zoom(0.9, 300);
+            }
+        }, 200);
+        return () => clearTimeout(timer);
+    }, [dimensions]);
+
     const handleNodeClick = useCallback((node: any) => {
         setSelectedNode(node);
     }, []);

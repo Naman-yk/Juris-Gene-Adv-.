@@ -115,16 +115,17 @@ export const DEMO_GRAPH_COLORS: Record<string, { dark: string; light: string }> 
 };
 
 /* ─── Fixed Node Positions for Knowledge Graph ─── */
+/* Centered around origin (0,0) so nodes appear in the middle of the canvas */
 
 export const DEMO_GRAPH_POSITIONS: Record<string, { x: number; y: number }> = {
-    suraj:      { x: 0,   y: 0 },
-    loan:       { x: 150, y: -80 },
-    ramavtar:   { x: 300, y: 0 },
-    cheque:     { x: 450, y: -80 },
-    sbi:        { x: 600, y: 0 },
-    dishonour:  { x: 600, y: 150 },
-    notice:     { x: 150, y: 150 },
-    conviction: { x: 300, y: 250 },
+    suraj:      { x: -300, y: -100 },
+    loan:       { x: -100, y: -200 },
+    ramavtar:   { x:  100, y: -100 },
+    cheque:     { x:  300, y: -200 },
+    sbi:        { x:  300, y:    0 },
+    dishonour:  { x:  100, y:  150 },
+    notice:     { x: -250, y:  150 },
+    conviction: { x:    0, y:  300 },
 };
 
 /* ─── Compliance Engine (Section 138 NI Act) ─── */

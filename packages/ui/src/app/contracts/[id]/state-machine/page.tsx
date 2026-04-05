@@ -62,26 +62,6 @@ export default function StateMachinePage({ params }: { params: { id: string } })
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-    if (loading) {
-        return (
-            <div className="container py-8 max-w-[1400px] flex flex-col items-center justify-center min-h-[60vh]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
-                <p className="text-muted-foreground font-medium">Building execution state machine…</p>
-            </div>
-        );
-    }
-
-    if (error && !isDemo) {
-        return (
-            <div className="container py-8 max-w-[1400px] flex flex-col items-center justify-center min-h-[60vh] text-center">
-                <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
-                <h3 className="text-xl font-bold mb-2">Analysis Failed</h3>
-                <p className="text-muted-foreground mb-4 max-w-md">{error}</p>
-                <Button onClick={() => window.location.reload()}>Try Again</Button>
-            </div>
-        );
-    }
-
     const simTransition = transitions.find((t: any) => !t.isBackwards && t.source === states.find((s: any) => s.isActive)?.id);
 
     const simulateTransition = useCallback(() => {
@@ -121,11 +101,24 @@ export default function StateMachinePage({ params }: { params: { id: string } })
         setSimulationLog([]);
     }, [setNodes, setEdges, states, transitions]);
 
+    // ── Early returns AFTER all hooks ──
+
     if (loading) {
         return (
-            <div className="container py-8 max-w-7xl flex flex-col items-center justify-center min-h-[60vh]">
+            <div className="container py-8 max-w-[1400px] flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
-                <p className="text-muted-foreground font-medium">Building state machine…</p>
+                <p className="text-muted-foreground font-medium">Building execution state machine…</p>
+            </div>
+        );
+    }
+
+    if (error && !isDemo) {
+        return (
+            <div className="container py-8 max-w-[1400px] flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+                <h3 className="text-xl font-bold mb-2">Analysis Failed</h3>
+                <p className="text-muted-foreground mb-4 max-w-md">{error}</p>
+                <Button onClick={() => window.location.reload()}>Try Again</Button>
             </div>
         );
     }
@@ -218,3 +211,4 @@ export default function StateMachinePage({ params }: { params: { id: string } })
         </div>
     );
 }
+

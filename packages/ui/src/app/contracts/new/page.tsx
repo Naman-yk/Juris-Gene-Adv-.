@@ -100,7 +100,7 @@ export default function NewContractPage() {
                 </p>
                 <div className="mt-6 flex flex-wrap items-center gap-4">
                     <Button
-                        onClick={() => router.push('/contracts/jg-demo-138/core')}
+                        onClick={() => router.push('/contracts/jg-demo-138/annotate')}
                         className="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white shadow-lg shadow-emerald-600/20"
                     >
                         <Play className="mr-2 h-5 w-5" />

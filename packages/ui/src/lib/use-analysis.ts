@@ -138,7 +138,6 @@ export function useAnalysis(contractId: string): {
     const content = contract?.content || '';
     const isDemo = contractId === 'jg-demo-138' || isDemoCase(content);
 
-    // Initialize loading=true for non-demo so pages show spinner immediately
     const [analysis, setAnalysis] = useState<DocumentAnalysis | null>(null);
     const [loading, setLoading] = useState(!isDemo);
     const [error, setError] = useState<string | null>(null);
@@ -154,6 +153,7 @@ export function useAnalysis(contractId: string): {
 
         // Skip if already fetched in this mount
         if (fetchedRef.current) return;
+        fetchedRef.current = true;
 
         // Check in-memory cache
         const cached = clientCache.get(contractId);
@@ -169,40 +169,29 @@ export function useAnalysis(contractId: string): {
             clientCache.set(contractId, persisted);
             setAnalysis(persisted);
             setLoading(false);
-            fetchedRef.current = true;
             return;
         }
 
-        // Fetch from backend — send content in body so backend
-        // can analyze even if its in-memory store was wiped
-        fetchedRef.current = true;
-        setLoading(true);
-        setError(null);
-
-        fetch(`/api/contracts/${contractId}/analyze`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content }),
-        })
-            .then(res => {
-                if (!res.ok) throw new Error(`Analysis failed (${res.status})`);
-                return res.json();
-            })
-            .then(data => {
-                if (data.analysis) {
-                    clientCache.set(contractId, data.analysis);
-                    persistAnalysis(contractId, data.analysis);
-                    setAnalysis(data.analysis);
-                } else {
-                    throw new Error('No analysis data returned');
-                }
-            })
-            .catch(err => {
-                console.error('[useAnalysis] Error:', err.message);
-                setError(err.message);
-            })
-            .finally(() => setLoading(false));
+        // Client-side extraction — no API dependency, works instantly
+        if (content && content.trim().length > 30) {
+            try {
+                const { extractFromText } = require('./client-extract');
+                const result = extractFromText(content) as DocumentAnalysis;
+                clientCache.set(contractId, result);
+                persistAnalysis(contractId, result);
+                setAnalysis(result);
+                setLoading(false);
+            } catch (err: any) {
+                console.error('[useAnalysis] Client extraction error:', err.message);
+                setError('Failed to analyze document');
+                setLoading(false);
+            }
+        } else {
+            setError('No document content available for analysis');
+            setLoading(false);
+        }
     }, [contractId, isDemo, content]);
 
     return { analysis, isDemo, loading, error };
 }
+

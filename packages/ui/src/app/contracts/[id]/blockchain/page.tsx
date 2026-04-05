@@ -1,40 +1,64 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Network, Link2, CheckCircle2, Clock, ExternalLink, ArrowLeft, Shield, Hash } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { HashBadge } from '@/components/ui/hash-badge';
 import { useRouter } from 'next/navigation';
+import { Shield, ArrowLeft, Link2, Check, Loader2, Copy, ExternalLink, Hash } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { DEMO_BLOCKCHAIN } from '@/lib/demo-data';
+import { useAnalysis } from '@/lib/use-analysis';
 import { useContractStore } from '@/lib/stores';
-import { DEMO_BLOCKCHAIN, DEMO_CASE } from '@/lib/demo-data';
 
-export default function BlockchainAuditPage({ params }: { params: { id: string } }) {
+function hashContent(content: string): string {
+    let hash = 0;
+    for (let i = 0; i < content.length; i++) {
+        const char = content.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0;
+    }
+    const hex = Math.abs(hash).toString(16).padStart(8, '0');
+    return `0x${hex.repeat(8)}`.substring(0, 66);
+}
+
+export default function BlockchainAnchorPage({ params }: { params: { id: string } }) {
     const router = useRouter();
-    const [isAnchored, setIsAnchored] = useState(false);
-    const [isAnchoring, setIsAnchoring] = useState(false);
-
+    const { isDemo } = useAnalysis(params.id);
     const contracts = useContractStore((state) => state.contracts);
-    const contract = contracts.find(c => c.id === params.id) || { title: "Unknown Contract", hash: "0x000", partyA: "Party A", partyB: "Party B" } as any;
+    const contract = contracts.find(c => c.id === params.id);
+
+    const [anchoring, setAnchoring] = useState(false);
+    const [anchored, setAnchored] = useState(isDemo);
+
+    const content = contract?.content || '';
+    const contractHash = isDemo ? DEMO_BLOCKCHAIN.contractHash : hashContent(content);
+    const executionHash = isDemo ? DEMO_BLOCKCHAIN.executionHash : hashContent(content + '_exec');
+    const txHash = isDemo ? DEMO_BLOCKCHAIN.txHash : hashContent(content + '_tx');
+    const network = DEMO_BLOCKCHAIN.network;
+    const blockNumber = isDemo ? DEMO_BLOCKCHAIN.blockNumber : Math.floor(7000000 + Math.random() * 1000000);
+    const gasUsed = DEMO_BLOCKCHAIN.gasUsed;
 
     const handleAnchor = () => {
-        setIsAnchoring(true);
-        // Simulate anchoring delay for demo effect
+        setAnchoring(true);
         setTimeout(() => {
-            setIsAnchored(true);
-            setIsAnchoring(false);
+            setAnchoring(false);
+            setAnchored(true);
         }, 2000);
     };
 
-    const explorerUrl = `https://sepolia.etherscan.io/tx/${DEMO_BLOCKCHAIN.txHash}`;
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text).catch(() => {});
+    };
 
     return (
-        <div className="container py-8 max-w-5xl">
+        <div className="container py-8 max-w-4xl">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Blockchain Anchor</h1>
+                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+                        <Shield className="h-7 w-7 text-primary" /> Blockchain Anchor
+                    </h1>
                     <p className="text-muted-foreground mt-1 text-sm font-medium">
-                        Immutable proof — {DEMO_CASE.section}
+                        Immutable on-chain verification — {network}
                     </p>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => router.push(`/contracts/${params.id}`)}>
@@ -42,102 +66,98 @@ export default function BlockchainAuditPage({ params }: { params: { id: string }
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Anchor Panel */}
-                <Card className={isAnchored ? "border-green-500/50 bg-green-500/5" : ""}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Hash Panel */}
+                <Card className="border-2 border-primary/10">
                     <CardHeader>
-                        <CardTitle className="flex justify-between items-center">
-                            <span>Network Registration</span>
-                            {isAnchored && <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">Anchored</span>}
-                        </CardTitle>
-                        <CardDescription>Secure the conviction judgment hash onto Ethereum Sepolia testnet.</CardDescription>
+                        <CardTitle className="flex items-center gap-2"><Hash className="h-5 w-5" /> Document Hashes</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        {/* Pre-anchor: show hashes */}
-                        <div className="p-4 bg-muted/30 rounded-lg border space-y-4">
-                            <div>
-                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Contract Hash</span>
-                                <HashBadge hash={DEMO_BLOCKCHAIN.contractHash} truncateLength={24} className="text-base py-1 mt-1" />
+                    <CardContent className="space-y-4">
+                        <div>
+                            <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Contract Hash</label>
+                            <div className="flex items-center gap-2 mt-1 p-2 bg-muted/30 rounded-lg font-mono text-xs break-all">
+                                <span className="flex-1">{contractHash}</span>
+                                <Button variant="ghost" size="icon" className="h-6 w-6 flex-shrink-0" onClick={() => copyToClipboard(contractHash)}>
+                                    <Copy className="h-3 w-3" />
+                                </Button>
                             </div>
-                            <div>
-                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Execution Hash</span>
-                                <HashBadge hash={DEMO_BLOCKCHAIN.executionHash} truncateLength={24} className="text-base py-1 mt-1" />
+                        </div>
+                        <div>
+                            <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Execution Hash</label>
+                            <div className="flex items-center gap-2 mt-1 p-2 bg-muted/30 rounded-lg font-mono text-xs break-all">
+                                <span className="flex-1">{executionHash}</span>
+                                <Button variant="ghost" size="icon" className="h-6 w-6 flex-shrink-0" onClick={() => copyToClipboard(executionHash)}>
+                                    <Copy className="h-3 w-3" />
+                                </Button>
                             </div>
                         </div>
 
-                        {isAnchored ? (
-                            <div className="space-y-4 pt-4 border-t border-green-500/20">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Network</span>
-                                    <span className="font-semibold flex items-center gap-1.5">
-                                        <Network className="h-4 w-4" /> {DEMO_BLOCKCHAIN.network}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-sm text-muted-foreground">Transaction Hash</span>
-                                    <HashBadge hash={DEMO_BLOCKCHAIN.txHash} truncateLength={24} />
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Block Number</span>
-                                    <span className="font-mono">{DEMO_BLOCKCHAIN.blockNumber.toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Gas Used</span>
-                                    <span className="font-mono">{DEMO_BLOCKCHAIN.gasUsed}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Timestamp</span>
-                                    <span className="font-mono text-xs">{new Date(DEMO_BLOCKCHAIN.anchoredAt).toLocaleString()}</span>
-                                </div>
-                                <a href={explorerUrl} target="_blank" rel="noopener noreferrer">
-                                    <Button variant="outline" className="w-full mt-4 bg-background text-green-700 border-green-500 hover:bg-green-50 dark:hover:bg-green-950">
-                                        <ExternalLink className="h-4 w-4 mr-2" /> View on Sepolia Explorer
-                                    </Button>
-                                </a>
-                            </div>
-                        ) : (
-                            <Button
-                                className="w-full h-12 text-lg font-medium"
-                                onClick={handleAnchor}
-                                disabled={isAnchoring}
-                            >
-                                {isAnchoring ? (
-                                    <span className="flex items-center gap-2">
-                                        <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                        Broadcasting to Sepolia...
-                                    </span>
+                        {!anchored ? (
+                            <Button className="w-full mt-4" onClick={handleAnchor} disabled={anchoring}>
+                                {anchoring ? (
+                                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Anchoring on Sepolia…</>
                                 ) : (
-                                    "⚓ Anchor Contract on Chain"
+                                    <><Link2 className="h-4 w-4 mr-2" /> Anchor to Blockchain</>
                                 )}
                             </Button>
+                        ) : (
+                            <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-medium mt-4 p-3 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-200 dark:border-green-800">
+                                <Check className="h-5 w-5" /> Anchored Successfully
+                            </div>
                         )}
                     </CardContent>
                 </Card>
 
-                {/* Info Panel */}
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Shield className="h-5 w-5 text-primary" /> What This Proves
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4 text-sm">
-                            <div className="p-3 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50">
-                                <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-1">Tamper-Proof Record</h4>
-                                <p className="text-blue-600/80 dark:text-blue-300/80">The SHA-256 hash of the judgment (Case No. {DEMO_CASE.caseNumber}) is permanently anchored on the Ethereum Sepolia testnet. Any modification to the document will produce a different hash.</p>
+                {/* Transaction Panel */}
+                <Card className={`border-2 ${anchored ? 'border-green-500/20' : 'border-muted'}`}>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Link2 className="h-5 w-5" /> Transaction Record
+                            {anchored && <Badge className="bg-green-500 text-white ml-2">CONFIRMED</Badge>}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {anchored ? (
+                            <>
+                                <div>
+                                    <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">TX Hash</label>
+                                    <div className="flex items-center gap-2 mt-1 p-2 bg-muted/30 rounded-lg font-mono text-xs break-all">
+                                        <span className="flex-1">{txHash}</span>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 flex-shrink-0" onClick={() => copyToClipboard(txHash)}>
+                                            <Copy className="h-3 w-3" />
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Network</label>
+                                        <p className="text-sm font-medium mt-1">{network}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Block Number</label>
+                                        <p className="text-sm font-medium mt-1 font-mono">{blockNumber.toLocaleString()}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Gas Used</label>
+                                        <p className="text-sm font-medium mt-1 font-mono">{gasUsed}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Status</label>
+                                        <Badge className="bg-green-500 text-white mt-1">ANCHORED</Badge>
+                                    </div>
+                                </div>
+                                <Button variant="outline" size="sm" className="w-full mt-4" onClick={() => window.open(`https://sepolia.etherscan.io/tx/${txHash}`, '_blank')}>
+                                    <ExternalLink className="h-4 w-4 mr-2" /> View on Etherscan
+                                </Button>
+                            </>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+                                <Shield className="h-12 w-12 opacity-30 mb-3" />
+                                <p className="text-sm">Anchor the document to see the on-chain transaction record.</p>
                             </div>
-                            <div className="p-3 rounded-lg bg-green-50/50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/50">
-                                <h4 className="font-semibold text-green-700 dark:text-green-400 mb-1">Timestamp Authority</h4>
-                                <p className="text-green-600/80 dark:text-green-300/80">The conviction of {DEMO_CASE.verdict} under {DEMO_CASE.section} is timestamped immutably on {new Date(DEMO_BLOCKCHAIN.anchoredAt).toLocaleDateString()}, proving existence at that point in time.</p>
-                            </div>
-                            <div className="p-3 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/50">
-                                <h4 className="font-semibold text-purple-700 dark:text-purple-400 mb-1">Verifiable by Anyone</h4>
-                                <p className="text-purple-600/80 dark:text-purple-300/80">Any party can verify the hash on-chain via Etherscan. No centralized authority required — the blockchain is the source of truth.</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

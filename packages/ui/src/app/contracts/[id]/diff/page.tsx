@@ -1,155 +1,130 @@
 "use client";
 
 import React from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { GitCompare, FileCode2, Scale, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { FileText, ArrowLeft, AlertTriangle, Plus, Minus, Edit3, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 import { DEMO_DIFF } from '@/lib/demo-data';
+import { useAnalysis } from '@/lib/use-analysis';
 
-const statusStyles: Record<string, { border: string; bg: string; badge: string; badgeText: string }> = {
-    added:    { border: 'border-l-green-500',  bg: 'bg-green-50/50 dark:bg-green-950/20', badge: 'bg-green-100 text-green-800 border-green-200', badgeText: 'ADDED' },
-    removed:  { border: 'border-l-red-500',    bg: 'bg-red-50/50 dark:bg-red-950/20',     badge: 'bg-red-100 text-red-800 border-red-200',     badgeText: 'REMOVED' },
-    modified: { border: 'border-l-yellow-500', bg: 'bg-yellow-50/50 dark:bg-yellow-950/20', badge: 'bg-yellow-100 text-yellow-800 border-yellow-200', badgeText: 'MODIFIED' },
-    original: { border: 'border-l-gray-300',   bg: 'bg-muted/10',                          badge: '',                                           badgeText: '' },
+const statusConfig: Record<string, { icon: any; label: string; bg: string; text: string; border: string }> = {
+    original:  { icon: Check,  label: 'UNCHANGED', bg: 'bg-slate-50 dark:bg-slate-800/30', text: 'text-slate-600 dark:text-slate-400', border: 'border-slate-200 dark:border-slate-700' },
+    added:     { icon: Plus,   label: 'ADDED',     bg: 'bg-green-50 dark:bg-green-900/10', text: 'text-green-700 dark:text-green-400', border: 'border-green-200 dark:border-green-800' },
+    removed:   { icon: Minus,  label: 'REMOVED',   bg: 'bg-red-50 dark:bg-red-900/10',     text: 'text-red-700 dark:text-red-400',   border: 'border-red-200 dark:border-red-800' },
+    modified:  { icon: Edit3,  label: 'MODIFIED',  bg: 'bg-yellow-50 dark:bg-yellow-900/10', text: 'text-yellow-700 dark:text-yellow-400', border: 'border-yellow-200 dark:border-yellow-800' },
 };
 
-export default function ContractDiffPage() {
-    const params = useParams() as { id: string };
+export default function ContractDiffPage({ params }: { params: { id: string } }) {
     const router = useRouter();
+    const { analysis, isDemo, loading } = useAnalysis(params.id);
 
-    const { versionA, versionB, summary } = DEMO_DIFF;
+    const diff = isDemo ? DEMO_DIFF : analysis?.diff;
+    const versionA = diff?.versionA;
+    const versionB = diff?.versionB;
+    const summary = diff?.summary;
+
+    if (loading) {
+        return (
+            <div className="container py-8 max-w-6xl flex flex-col items-center justify-center min-h-[60vh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
+                <p className="text-muted-foreground font-medium">Analyzing document structure…</p>
+            </div>
+        );
+    }
+
+    if (!diff || !versionA || !versionB) {
+        return (
+            <div className="container py-8 max-w-6xl text-center">
+                <p className="text-muted-foreground">No diff data available for this document.</p>
+                <Button variant="outline" className="mt-4" onClick={() => router.push(`/contracts/${params.id}`)}>
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to Contract
+                </Button>
+            </div>
+        );
+    }
 
     return (
-        <div className="container py-8 max-w-6xl space-y-6">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="container py-8 max-w-6xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                        <GitCompare className="h-7 w-7 text-primary" /> Contract Diff
+                        <FileText className="h-7 w-7 text-primary" /> Contract Diff
                     </h1>
-                    <p className="text-muted-foreground mt-1 text-sm font-medium">
-                        Settlement 2016 vs Settlement 2022
-                    </p>
+                    <p className="text-muted-foreground mt-1 text-sm font-medium">Side-by-side comparison of document versions</p>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => router.push(`/contracts/${params.id}`)}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Back to Contract
                 </Button>
             </div>
 
-            {/* Version Headers */}
-            <div className="flex flex-col md:flex-row gap-4 items-stretch bg-muted/30 p-4 rounded-xl border">
-                <div className="flex-1 space-y-2">
-                    <div className="text-sm font-semibold uppercase text-muted-foreground flex items-center gap-2">
-                        <FileCode2 className="h-4 w-4" /> Version A (Original)
-                    </div>
-                    <h3 className="font-bold text-base">{versionA.title}</h3>
-                    <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">{versionA.date}</Badge>
-                </div>
+            {/* Summary Banner */}
+            {summary && (
+                <Card className="mb-6 border-yellow-400/30 bg-yellow-50/50 dark:bg-yellow-900/10">
+                    <CardContent className="flex flex-wrap items-center gap-4 py-4">
+                        <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                        <span className="font-medium text-sm">Diff Summary:</span>
+                        <Badge variant="outline" className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-300">+{summary.added} Added</Badge>
+                        <Badge variant="outline" className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-300">-{summary.removed} Removed</Badge>
+                        <Badge variant="outline" className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border-yellow-300">~{summary.modified} Modified</Badge>
+                        <Badge variant="outline" className="bg-slate-50 dark:bg-slate-800/20 text-slate-600 dark:text-slate-400 border-slate-300">={summary.unchanged} Unchanged</Badge>
+                        <Badge className="ml-auto bg-yellow-500 text-white">{summary.status}</Badge>
+                    </CardContent>
+                </Card>
+            )}
 
-                <div className="hidden md:flex flex-col items-center justify-center px-6 border-x">
-                    <GitCompare className="h-6 w-6 text-muted-foreground mb-2" />
-                    <Badge variant="destructive">DIVERGENT</Badge>
-                </div>
-
-                <div className="flex-1 space-y-2 md:text-right">
-                    <div className="text-sm font-semibold uppercase text-muted-foreground flex items-center md:justify-end gap-2">
-                        <FileCode2 className="h-4 w-4 text-blue-500" /> Version B (Updated)
-                    </div>
-                    <h3 className="font-bold text-base text-blue-600 dark:text-blue-400">{versionB.title}</h3>
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">{versionB.date}</Badge>
-                </div>
-            </div>
-
-            {/* Summary Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="p-3 rounded-lg border bg-green-50/30 dark:bg-green-950/10 text-center">
-                    <div className="text-2xl font-bold text-green-600">{summary.added}</div>
-                    <div className="text-xs text-muted-foreground font-medium uppercase">Added</div>
-                </div>
-                <div className="p-3 rounded-lg border bg-red-50/30 dark:bg-red-950/10 text-center">
-                    <div className="text-2xl font-bold text-red-600">{summary.removed}</div>
-                    <div className="text-xs text-muted-foreground font-medium uppercase">Removed</div>
-                </div>
-                <div className="p-3 rounded-lg border bg-yellow-50/30 dark:bg-yellow-950/10 text-center">
-                    <div className="text-2xl font-bold text-yellow-600">{summary.modified}</div>
-                    <div className="text-xs text-muted-foreground font-medium uppercase">Modified</div>
-                </div>
-                <div className="p-3 rounded-lg border bg-muted/30 text-center">
-                    <div className="text-2xl font-bold text-muted-foreground">{summary.unchanged}</div>
-                    <div className="text-xs text-muted-foreground font-medium uppercase">Unchanged</div>
-                </div>
-            </div>
-
-            {/* Side-by-Side Diff */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Side by side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Version A */}
-                <div>
-                    <h2 className="text-lg font-bold flex items-center gap-2 mb-3">
-                        <Scale className="h-5 w-5 text-primary" /> Settlement 2016
-                    </h2>
-                    <div className="space-y-3">
-                        {versionA.clauses.map(clause => {
-                            const style = statusStyles[clause.status] || statusStyles.original;
+                <Card>
+                    <CardHeader className="bg-muted/20 border-b">
+                        <CardTitle className="text-base">{versionA.title}</CardTitle>
+                        <p className="text-xs text-muted-foreground">{versionA.date}</p>
+                    </CardHeader>
+                    <CardContent className="space-y-3 py-4">
+                        {versionA.clauses.map((clause: any) => {
+                            const config = statusConfig[clause.status] || statusConfig.original;
+                            const Icon = config.icon;
                             return (
-                                <Card key={clause.id} className={cn("border-l-4 overflow-hidden", style.border)}>
-                                    <CardContent className="p-4">
-                                        <div className="flex items-start justify-between gap-2 mb-2">
-                                            <span className="font-mono text-xs text-muted-foreground">{clause.id}</span>
-                                            {style.badgeText && (
-                                                <Badge className={cn("text-xs", style.badge)}>{style.badgeText}</Badge>
-                                            )}
+                                <div key={clause.id} className={`p-3 rounded-lg border ${config.bg} ${config.border}`}>
+                                    <div className="flex items-start gap-2">
+                                        <Icon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${config.text}`} />
+                                        <div className="flex-1">
+                                            <p className="text-sm leading-relaxed">{clause.text}</p>
+                                            <Badge variant="outline" className={`mt-2 text-[10px] ${config.text} ${config.border}`}>{config.label}</Badge>
                                         </div>
-                                        <p className={cn("text-sm leading-relaxed", clause.status === 'removed' ? 'line-through opacity-60 text-red-700 dark:text-red-400' : '')}>
-                                            {clause.text}
-                                        </p>
-                                    </CardContent>
-                                </Card>
+                                    </div>
+                                </div>
                             );
                         })}
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
 
                 {/* Version B */}
-                <div>
-                    <h2 className="text-lg font-bold flex items-center gap-2 mb-3">
-                        <Scale className="h-5 w-5 text-blue-500" /> Settlement 2022
-                    </h2>
-                    <div className="space-y-3">
-                        {versionB.clauses.map(clause => {
-                            const style = statusStyles[clause.status] || statusStyles.original;
+                <Card>
+                    <CardHeader className="bg-muted/20 border-b">
+                        <CardTitle className="text-base">{versionB.title}</CardTitle>
+                        <p className="text-xs text-muted-foreground">{versionB.date}</p>
+                    </CardHeader>
+                    <CardContent className="space-y-3 py-4">
+                        {versionB.clauses.map((clause: any) => {
+                            const config = statusConfig[clause.status] || statusConfig.original;
+                            const Icon = config.icon;
                             return (
-                                <Card key={clause.id} className={cn("border-l-4 overflow-hidden", style.border)}>
-                                    <CardContent className="p-4">
-                                        <div className="flex items-start justify-between gap-2 mb-2">
-                                            <span className="font-mono text-xs text-muted-foreground">{clause.id}</span>
-                                            {style.badgeText && (
-                                                <Badge className={cn("text-xs", style.badge)}>{style.badgeText}</Badge>
-                                            )}
+                                <div key={clause.id} className={`p-3 rounded-lg border ${config.bg} ${config.border}`}>
+                                    <div className="flex items-start gap-2">
+                                        <Icon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${config.text}`} />
+                                        <div className="flex-1">
+                                            <p className="text-sm leading-relaxed">{clause.text}</p>
+                                            <Badge variant="outline" className={`mt-2 text-[10px] ${config.text} ${config.border}`}>{config.label}</Badge>
                                         </div>
-                                        <p className={cn("text-sm leading-relaxed", clause.status === 'added' ? 'text-green-700 dark:text-green-400 font-medium' : clause.status === 'modified' ? 'text-yellow-700 dark:text-yellow-400' : '')}>
-                                            {clause.text}
-                                        </p>
-                                    </CardContent>
-                                </Card>
+                                    </div>
+                                </div>
                             );
                         })}
-                    </div>
-                </div>
-            </div>
-
-            {/* Warning */}
-            <div className="flex items-start gap-3 p-4 rounded-lg border border-orange-300 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-900/50">
-                <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
-                <div>
-                    <h4 className="font-semibold text-orange-700 dark:text-orange-400 text-sm">Authenticity Warning</h4>
-                    <p className="text-sm text-orange-600/80 dark:text-orange-300/80 mt-1">
-                        Settlement documents Ex.DW1/1 (2016) and Mark A (2022) were never put to the complainant during cross-examination. 
-                        Per Section 145 CrPC, these are inadmissible as evidence.
-                    </p>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

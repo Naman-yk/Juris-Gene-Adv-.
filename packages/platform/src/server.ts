@@ -7,9 +7,11 @@
  * state-machine, knowledge graph, blockchain anchoring, audit, and settings.
  */
 
+import 'dotenv/config';
 import express, { Application, Request, Response } from 'express';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
+import { analyzeDocument, getCachedAnalysis, setCachedAnalysis } from './gemini-extract';
 
 const app: Application = express();
 app.use(express.json({ limit: '10mb' }));
@@ -1044,6 +1046,44 @@ app.get('/contracts/:id/graph', (req, res) => {
     edges.push({ source: 'contract-root', target: 'risk-assessment', label: 'assessed-by' });
 
     res.json({ contractId: contract.id, nodes, edges });
+});
+
+/* ─── DOCUMENT ANALYSIS (Gemini AI) ─── */
+
+/** POST /contracts/:id/analyze — Extract structured data from document using Gemini */
+app.post('/contracts/:id/analyze', async (req: Request, res: Response) => {
+    const contract = contractStore.get(req.params.id);
+    if (!contract) {
+        res.status(404).json({ error: 'Contract not found' });
+        return;
+    }
+
+    try {
+        // Check cache first
+        const cached = getCachedAnalysis(req.params.id);
+        if (cached) {
+            res.json({ analysis: cached, source: 'cache' });
+            return;
+        }
+
+        // Run Gemini extraction
+        const content = contract.content || '';
+        if (!content || content.trim().length < 50) {
+            res.status(400).json({ error: 'Document content too short for analysis' });
+            return;
+        }
+
+        console.log(`[analyze] Running Gemini extraction for contract ${req.params.id}...`);
+        const analysis = await analyzeDocument(content);
+
+        // Cache result
+        setCachedAnalysis(req.params.id, analysis);
+
+        res.json({ analysis, source: 'gemini' });
+    } catch (error: any) {
+        console.error(`[analyze] Error:`, error.message);
+        res.status(500).json({ error: 'Analysis failed', details: error.message });
+    }
 });
 
 /* ─── BLOCKCHAIN ANCHOR ─── */

@@ -9,6 +9,7 @@ import { ProvenanceBadge } from '@/components/ui/provenance-badge';
 import { useContractStore } from '@/lib/stores';
 import { AIOptionalBanner } from '@/components/ui/explainability';
 import { isDemoCase, DEMO_PARTIES, DEMO_FINANCIAL, DEMO_DATES, DEMO_CASE, DEMO_EXHIBITS } from '@/lib/demo-data';
+import { useAnalysis } from '@/lib/use-analysis';
 
 /* ────────────────────────────────────────────────────────────── */
 /* Deterministic demo suggestions                                 */
@@ -57,7 +58,7 @@ const DEMO_SUGGESTIONS = [
     },
     {
         id: 6,
-        type: 'Defence Claims',
+        type: 'Key Claims',
         icon: FileText,
         confidence: 88,
         text: `Accused claims:\n1. Cheque was a "blank signed security cheque" for the loan of ${DEMO_FINANCIAL.loanAmount}\n2. Repayment of ${DEMO_FINANCIAL.disputedRepayment} already made (no documentary proof produced)\n3. Admitted liability of ${DEMO_FINANCIAL.chequeAmount} — later retracted on counsel's prompting\n\n⚠ Settlement documents Ex.DW1/1 (2016) and Mark A (2022) never put to complainant during cross-examination → inadmissible per Section 145 CrPC.`,
@@ -66,7 +67,21 @@ const DEMO_SUGGESTIONS = [
 ];
 
 /* ────────────────────────────────────────────────────────────── */
-/* Dynamic extraction for non-demo documents                      */
+/* Icon mapping for entity types                                   */
+/* ────────────────────────────────────────────────────────────── */
+
+const ICON_MAP: Record<string, any> = {
+    'Party Identification': Users,
+    'Financial Instrument': DollarSign,
+    'Key Dates': Calendar,
+    'Legal Provision': Gavel,
+    'Exhibits': FileCheck,
+    'Key Claims': FileText,
+    'Defence Claims': FileText,
+};
+
+/* ────────────────────────────────────────────────────────────── */
+/* Dynamic extraction for non-demo documents (regex fallback)     */
 /* ────────────────────────────────────────────────────────────── */
 
 function generateDynamicSuggestions(content: string, contractSummary: any) {
@@ -88,7 +103,6 @@ function generateDynamicSuggestions(content: string, contractSummary: any) {
     const appellantPart = partyA ? partyA.split(' ')[0].toUpperCase() : "APPELLANT";
     const respondentPart = partyB ? partyB.split(' ')[0].toUpperCase() : "RESPONDENT";
 
-    // Party identification
     const partyClumps = clumps.filter(c => 
         c.toUpperCase().includes(appellantPart) || 
         c.toUpperCase().includes(respondentPart) ||
@@ -104,25 +118,23 @@ function generateDynamicSuggestions(content: string, contractSummary: any) {
         });
     }
 
-    // Obligation
     const bindingSentences = sentences.filter(s =>
         s.toLowerCase().includes('shall') || s.toLowerCase().includes('must') || 
         s.toLowerCase().includes('directed to') || s.toLowerCase().includes('ordered to')
     );
     if (bindingSentences.length > 0) {
         suggestions.push({
-            id: idCounter++, type: 'Obligation', confidence: 94,
+            id: idCounter++, type: 'Key Claims', confidence: 94,
             text: bindingSentences[0], status: 'pending'
         });
     }
 
-    // Date
     const datePattern = sentences.find(s => 
         (s.toLowerCase().includes('dated') && /\d{1,2}[./-]\d{1,2}[./-]\d{2,4}/.test(s))
     );
     if (datePattern) {
         suggestions.push({
-            id: idCounter++, type: 'Effective Date', confidence: 96,
+            id: idCounter++, type: 'Key Dates', confidence: 96,
             text: datePattern, status: 'pending'
         });
     }
@@ -139,19 +151,27 @@ export default function AIAnnotationPage({ params }: { params: { id: string } })
     const contracts = useContractStore((state) => state.contracts);
     const contract = contracts.find(c => c.id === params.id) || { title: "Unknown Contract", hash: "0x000", content: "", partyA: "Party A", partyB: "Party B" } as any;
 
+    const { analysis, isDemo, loading: analysisLoading } = useAnalysis(params.id);
+
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editValue, setEditValue] = useState<string>('');
 
     useEffect(() => {
-        const content = contract.content || '';
-        if (isDemoCase(content) || params.id === 'jg-demo-138') {
-            // Deterministic: always return the same demo suggestions
+        if (isDemo) {
             setSuggestions(DEMO_SUGGESTIONS.map(s => ({ ...s })));
-        } else {
-            setSuggestions(generateDynamicSuggestions(content, contract));
+        } else if (analysis) {
+            // Use Gemini-extracted entities
+            setSuggestions(analysis.entities.map(e => ({
+                ...e,
+                icon: ICON_MAP[e.type] || FileText,
+                status: 'pending',
+            })));
+        } else if (!analysisLoading) {
+            // Fallback to regex extraction
+            setSuggestions(generateDynamicSuggestions(contract.content || '', contract));
         }
-    }, [contract.content, contract.id, params.id]);
+    }, [isDemo, analysis, analysisLoading, contract.content, contract.id]);
 
     const pendingCount = suggestions.filter(s => s.status === 'pending').length;
     const totalCount = suggestions.length;

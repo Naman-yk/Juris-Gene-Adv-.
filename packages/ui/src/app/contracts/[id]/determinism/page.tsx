@@ -2,162 +2,115 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ShieldAlert, BadgeCheck, FileWarning, SearchX, Activity } from 'lucide-react';
-import { useContractStore } from '@/lib/stores';
+import { BarChart3, AlertTriangle, ArrowLeft, TrendingDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 import { DEMO_DETERMINISM_SCORE, DEMO_SCORE_DEDUCTIONS, getDeterminismRiskLabel } from '@/lib/demo-data';
+import { useAnalysis } from '@/lib/use-analysis';
 
-function RadialGauge({ score }: { score: number }) {
-    const radius = 60;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (score / 100) * circumference;
+export default function DeterminismScorePage({ params }: { params: { id: string } }) {
+    const router = useRouter();
+    const { analysis, isDemo, loading } = useAnalysis(params.id);
+
+    const score = isDemo ? DEMO_DETERMINISM_SCORE : (analysis?.determinism?.score ?? 75);
+    const deductions = isDemo ? DEMO_SCORE_DEDUCTIONS : (analysis?.determinism?.deductions || []);
     const risk = getDeterminismRiskLabel(score);
 
-    let color = 'text-green-500';
-    let bgStroke = 'text-green-500/20';
-    if (score <= 70 && score > 40) {
-        color = 'text-yellow-500';
-        bgStroke = 'text-yellow-500/20';
-    } else if (score <= 40) {
-        color = 'text-red-500';
-        bgStroke = 'text-red-500/20';
+    if (loading) {
+        return (
+            <div className="container py-8 max-w-4xl flex flex-col items-center justify-center min-h-[60vh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
+                <p className="text-muted-foreground font-medium">Calculating determinism score…</p>
+            </div>
+        );
     }
 
     return (
-        <div className="relative flex items-center justify-center w-48 h-48">
-            <svg className="absolute w-full h-full transform -rotate-90">
-                <circle cx="96" cy="96" r={radius} stroke="currentColor" strokeWidth="12" fill="transparent" className={bgStroke} />
-                <circle cx="96" cy="96" r={radius} stroke="currentColor" strokeWidth="12" fill="transparent" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} className={cn(color, "transition-all duration-1000 ease-in-out")} strokeLinecap="round" />
-            </svg>
-            <div className="absolute flex flex-col items-center justify-center">
-                <span className="text-4xl font-bold">{score}</span>
-                <span className="text-xs uppercase text-muted-foreground font-semibold">/ 100</span>
-            </div>
-        </div>
-    );
-}
-
-function ScoreBar({ score }: { score: number }) {
-    return (
-        <div className="w-full space-y-2">
-            <div className="flex justify-between text-xs text-muted-foreground">
-                <span>0 — HIGH RISK</span>
-                <span>40</span>
-                <span>70</span>
-                <span>100 — LOW RISK</span>
-            </div>
-            <div className="relative w-full h-4 rounded-full overflow-hidden bg-gradient-to-r from-red-500 via-yellow-500 to-green-500">
-                <div
-                    className="absolute top-0 h-full w-1 bg-white shadow-lg border border-black/20 rounded-full transform -translate-x-1/2 transition-all duration-700"
-                    style={{ left: `${score}%` }}
-                />
-            </div>
-        </div>
-    );
-}
-
-export default function DeterminismPage({ params }: { params: { id: string } }) {
-    const router = useRouter();
-    const contracts = useContractStore((state) => state.contracts);
-    const contract = contracts.find(c => c.id === params.id);
-
-    const score = DEMO_DETERMINISM_SCORE;
-    const deductions = DEMO_SCORE_DEDUCTIONS;
-    const risk = getDeterminismRiskLabel(score);
-    const totalDeducted = deductions.reduce((sum, d) => sum + Math.abs(d.points), 0);
-
-    const getIconForSeverity = (severity: string) => {
-        switch (severity) {
-            case 'HIGH': return <FileWarning className="w-5 h-5 text-red-500" />;
-            case 'MEDIUM': return <ShieldAlert className="w-5 h-5 text-yellow-500" />;
-            case 'LOW': return <Activity className="w-5 h-5 text-green-500" />;
-            default: return <SearchX className="w-5 h-5 text-muted-foreground" />;
-        }
-    };
-
-    const severityBadge = (severity: string) => {
-        switch (severity) {
-            case 'HIGH': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
-            case 'MEDIUM': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-            case 'LOW': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-            default: return 'bg-muted text-muted-foreground';
-        }
-    };
-
-    return (
-        <div className="container py-8 max-w-[1200px] space-y-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="container py-8 max-w-4xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-2">Determinism Score</h1>
-                    <p className="text-muted-foreground">Risk assessment identifying ambiguous terms, missing proofs, and contradictions.</p>
+                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+                        <BarChart3 className="h-7 w-7 text-primary" /> Determinism Score
+                    </h1>
+                    <p className="text-muted-foreground mt-1 text-sm font-medium">
+                        How predictable are the contract outcomes?
+                    </p>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => router.push(`/contracts/${params.id}`)}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Back to Contract
                 </Button>
             </div>
 
-            {/* Score Bar */}
-            <Card className="p-6">
-                <ScoreBar score={score} />
-            </Card>
-
-            <div className="grid md:grid-cols-3 gap-6">
-                {/* Score Panel */}
-                <Card className="md:col-span-1 border-2 flex flex-col items-center justify-center p-6 bg-slate-50/50 dark:bg-slate-900/50 shadow-sm">
-                    <h3 className="font-semibold text-lg text-center w-full border-b pb-4 mb-4">Overall Score</h3>
-                    <RadialGauge score={score} />
-
-                    <div className="mt-6 flex flex-col items-center gap-3">
-                        <Badge className={cn("text-sm px-4 py-1.5 shadow-sm text-white", score <= 40 ? 'bg-red-500' : score <= 70 ? 'bg-yellow-500' : 'bg-green-500')}>
-                            {risk.label}
-                        </Badge>
-                        <p className="text-xs text-center text-muted-foreground mt-2 px-4 leading-relaxed">
-                            0–40 = HIGH RISK • 40–70 = MEDIUM • 70–100 = LOW RISK<br />
-                            This document scores {score}/100 due to {deductions.length} risk factors.
-                        </p>
-                    </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Score Card */}
+                <Card className="lg:col-span-1 border-2 border-primary/10">
+                    <CardContent className="flex flex-col items-center justify-center py-10">
+                        <div className="relative w-40 h-40 mb-6">
+                            <svg className="w-full h-full" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="currentColor" strokeWidth="8" className="text-muted/20" />
+                                <circle cx="60" cy="60" r="50" fill="none" strokeWidth="8" strokeLinecap="round"
+                                    className={score > 70 ? 'text-green-500' : score > 40 ? 'text-yellow-500' : 'text-red-500'}
+                                    strokeDasharray={`${score * 3.14} ${314 - score * 3.14}`}
+                                    transform="rotate(-90 60 60)"
+                                    style={{ transition: 'stroke-dasharray 1s ease' }}
+                                />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className="text-4xl font-black">{score}</span>
+                                <span className="text-xs text-muted-foreground font-medium">/ 100</span>
+                            </div>
+                        </div>
+                        <Badge className={`text-sm px-3 py-1 ${risk.color}`}>{risk.label}</Badge>
+                        <div className="w-full mt-6 h-3 bg-muted rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all"
+                                style={{
+                                    width: `${score}%`,
+                                    background: 'linear-gradient(to right, #ef4444, #f59e0b, #22c55e)',
+                                }}
+                            />
+                        </div>
+                        <div className="flex justify-between w-full text-[10px] text-muted-foreground mt-1 px-1">
+                            <span>HIGH RISK</span><span>MEDIUM</span><span>LOW RISK</span>
+                        </div>
+                    </CardContent>
                 </Card>
 
-                {/* Deductions Panel */}
-                <Card className="md:col-span-2 shadow-sm flex flex-col">
-                    <CardHeader className="border-b bg-muted/20">
-                        <div className="flex justify-between items-center">
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <ShieldAlert className="w-5 h-5 text-primary" /> Risk Factors & Deductions
-                            </CardTitle>
-                            <Badge variant="secondary" className="font-mono">
-                                -{totalDeducted} Pts Total
-                            </Badge>
-                        </div>
-                        <CardDescription>Breakdown of deductions from the maximum score of 100.</CardDescription>
+                {/* Deductions */}
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <TrendingDown className="h-5 w-5 text-red-500" /> Score Deductions
+                        </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-0 flex-1 overflow-y-auto max-h-[500px]">
-                        <div className="divide-y">
-                            {deductions.map((d) => (
-                                <div key={d.id} className="p-4 flex items-start gap-4 hover:bg-muted/10 transition-colors">
-                                    <div className="mt-1 bg-background p-2 rounded-lg border shadow-sm">
-                                        {getIconForSeverity(d.severity)}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between mb-1 gap-2">
-                                            <div className="flex items-center gap-2">
-                                                <h4 className="font-semibold text-sm">{d.category.replace(/_/g, ' ')}</h4>
-                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${severityBadge(d.severity)}`}>
-                                                    {d.severity}
-                                                </span>
+                    <CardContent className="space-y-3">
+                        {deductions.map(d => {
+                            const severityClass = d.severity === 'HIGH' ? 'border-red-500/30 bg-red-500/5' :
+                                d.severity === 'MEDIUM' ? 'border-yellow-500/30 bg-yellow-500/5' :
+                                'border-blue-500/30 bg-blue-500/5';
+                            const severityBadge = d.severity === 'HIGH' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                                d.severity === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+
+                            return (
+                                <div key={d.id} className={`rounded-lg border p-4 ${severityClass}`}>
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <AlertTriangle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                                <span className="font-mono text-xs text-muted-foreground">{d.category.replace(/_/g, ' ')}</span>
+                                                <Badge className={`text-[10px] px-1.5 ${severityBadge}`}>{d.severity}</Badge>
                                             </div>
-                                            <span className="text-red-500 dark:text-red-400 font-bold font-mono text-sm leading-none flex items-center bg-red-50 dark:bg-red-950/30 px-2 py-1 rounded flex-shrink-0">
-                                                {d.points}
-                                            </span>
+                                            <p className="text-sm">{d.description}</p>
                                         </div>
-                                        <p className="text-sm text-slate-700 dark:text-slate-300 leading-snug">{d.description}</p>
+                                        <span className="text-red-500 font-bold text-lg whitespace-nowrap">{d.points}</span>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            );
+                        })}
+                        {deductions.length === 0 && (
+                            <p className="text-muted-foreground text-sm text-center py-8">No deductions identified.</p>
+                        )}
                     </CardContent>
                 </Card>
             </div>

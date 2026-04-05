@@ -11,7 +11,7 @@ import { useAnalysis } from '@/lib/use-analysis';
 
 export default function DeterminismScorePage({ params }: { params: { id: string } }) {
     const router = useRouter();
-    const { analysis, isDemo, loading } = useAnalysis(params.id);
+    const { analysis, isDemo, loading, error } = useAnalysis(params.id);
 
     const score = isDemo ? DEMO_DETERMINISM_SCORE : (analysis?.determinism?.score ?? 75);
     const deductions = isDemo ? DEMO_SCORE_DEDUCTIONS : (analysis?.determinism?.deductions || []);
@@ -22,6 +22,17 @@ export default function DeterminismScorePage({ params }: { params: { id: string 
             <div className="container py-8 max-w-4xl flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
                 <p className="text-muted-foreground font-medium">Calculating determinism score…</p>
+            </div>
+        );
+    }
+
+    if (error && !isDemo) {
+        return (
+            <div className="container py-8 max-w-4xl flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+                <h3 className="text-xl font-bold mb-2">Analysis Failed</h3>
+                <p className="text-muted-foreground mb-4 max-w-md">{error}</p>
+                <Button onClick={() => window.location.reload()}>Try Again</Button>
             </div>
         );
     }

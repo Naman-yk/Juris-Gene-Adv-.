@@ -63,10 +63,10 @@ function RuleCard({ rule, index }: { rule: ComplianceRule; index: number }) {
 
 export default function ComplianceDashboardPage({ params }: { params: { id: string } }) {
     const router = useRouter();
-    const { analysis, isDemo, loading } = useAnalysis(params.id);
+    const { analysis, isDemo, loading, error } = useAnalysis(params.id);
 
-    const rules: ComplianceRule[] = isDemo ? DEMO_COMPLIANCE_RULES : (analysis?.compliance?.rules || []) as ComplianceRule[];
-    const findings: ComplianceRule[] = isDemo ? DEMO_ADDITIONAL_FINDINGS : (analysis?.compliance?.additionalFindings || []) as ComplianceRule[];
+    const rules = isDemo ? DEMO_COMPLIANCE_RULES : (analysis?.compliance?.rules || []);
+    const findings = isDemo ? DEMO_ADDITIONAL_FINDINGS : (analysis?.compliance?.additionalFindings || []);
     const sectionLabel = isDemo ? 'Section 138 NI Act — 6 Ingredients' : (analysis?.metadata?.section || 'Legal Compliance Rules');
 
     const passCount = rules.filter(r => r.status === 'PASS').length;
@@ -75,9 +75,20 @@ export default function ComplianceDashboardPage({ params }: { params: { id: stri
 
     if (loading) {
         return (
-            <div className="container py-8 max-w-5xl flex flex-col items-center justify-center min-h-[60vh]">
+            <div className="container py-8 max-w-4xl flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
-                <p className="text-muted-foreground font-medium">Analyzing document for compliance…</p>
+                <p className="text-muted-foreground font-medium">Running compliance engine…</p>
+            </div>
+        );
+    }
+
+    if (error && !isDemo) {
+        return (
+            <div className="container py-8 max-w-4xl flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+                <h3 className="text-xl font-bold mb-2">Analysis Failed</h3>
+                <p className="text-muted-foreground mb-4 max-w-md">{error}</p>
+                <Button onClick={() => window.location.reload()}>Try Again</Button>
             </div>
         );
     }

@@ -18,7 +18,7 @@ const statusConfig: Record<string, { icon: any; label: string; bg: string; text:
 
 export default function ContractDiffPage({ params }: { params: { id: string } }) {
     const router = useRouter();
-    const { analysis, isDemo, loading } = useAnalysis(params.id);
+    const { analysis, isDemo, loading, error } = useAnalysis(params.id);
 
     const diff = isDemo ? DEMO_DIFF : analysis?.diff;
     const versionA = diff?.versionA;
@@ -30,6 +30,17 @@ export default function ContractDiffPage({ params }: { params: { id: string } })
             <div className="container py-8 max-w-6xl flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
                 <p className="text-muted-foreground font-medium">Analyzing document structure…</p>
+            </div>
+        );
+    }
+
+    if (error && !isDemo) {
+        return (
+            <div className="container py-8 max-w-6xl flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+                <h3 className="text-xl font-bold mb-2">Analysis Failed</h3>
+                <p className="text-muted-foreground mb-4 max-w-md">{error}</p>
+                <Button onClick={() => window.location.reload()}>Try Again</Button>
             </div>
         );
     }

@@ -4,7 +4,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import ReactFlow, { Background, Controls, MarkerType, useNodesState, useEdgesState } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Play, RotateCcw, ArrowLeft, Activity } from 'lucide-react';
+import { Play, RotateCcw, ArrowLeft, Activity, AlertTriangle } from 'lucide-react';
 
 import { useContractStore } from '@/lib/stores';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,7 @@ function buildFlowEdges(transitions: any[], onTransitionClick: (data: any) => vo
 
 export default function StateMachinePage({ params }: { params: { id: string } }) {
     const router = useRouter();
-    const { analysis, isDemo, loading } = useAnalysis(params.id);
+    const { analysis, isDemo, loading, error } = useAnalysis(params.id);
 
     const states = isDemo ? DEMO_STATES : (analysis?.states?.nodes || DEMO_STATES);
     const transitions = isDemo ? DEMO_TRANSITIONS : (analysis?.states?.transitions || DEMO_TRANSITIONS);
@@ -62,7 +62,26 @@ export default function StateMachinePage({ params }: { params: { id: string } })
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-    // Find the first forward transition for simulation
+    if (loading) {
+        return (
+            <div className="container py-8 max-w-[1400px] flex flex-col items-center justify-center min-h-[60vh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
+                <p className="text-muted-foreground font-medium">Building execution state machine…</p>
+            </div>
+        );
+    }
+
+    if (error && !isDemo) {
+        return (
+            <div className="container py-8 max-w-[1400px] flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+                <h3 className="text-xl font-bold mb-2">Analysis Failed</h3>
+                <p className="text-muted-foreground mb-4 max-w-md">{error}</p>
+                <Button onClick={() => window.location.reload()}>Try Again</Button>
+            </div>
+        );
+    }
+
     const simTransition = transitions.find((t: any) => !t.isBackwards && t.source === states.find((s: any) => s.isActive)?.id);
 
     const simulateTransition = useCallback(() => {

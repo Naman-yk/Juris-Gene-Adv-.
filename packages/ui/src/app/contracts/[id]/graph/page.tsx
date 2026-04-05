@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Network, ArrowLeft, Layers, Maximize2 } from 'lucide-react';
+import { Network, ArrowLeft, Layers, Maximize2, AlertTriangle } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 import { useContractStore } from '@/lib/stores';
@@ -52,7 +52,7 @@ export default function KnowledgeGraphPage({ params }: { params: { id: string } 
     const router = useRouter();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
-    const { analysis, isDemo, loading } = useAnalysis(params.id);
+    const { analysis, isDemo, loading, error } = useAnalysis(params.id);
 
     const graphNodes = isDemo ? DEMO_GRAPH_NODES : (analysis?.graph?.nodes || []);
     const graphEdges = isDemo ? DEMO_GRAPH_EDGES : (analysis?.graph?.edges || []);
@@ -102,6 +102,17 @@ export default function KnowledgeGraphPage({ params }: { params: { id: string } 
             <div className="container py-8 max-w-[1400px] flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
                 <p className="text-muted-foreground font-medium">Building knowledge graph…</p>
+            </div>
+        );
+    }
+
+    if (error && !isDemo) {
+        return (
+            <div className="container py-8 max-w-[1400px] flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+                <h3 className="text-xl font-bold mb-2">Analysis Failed</h3>
+                <p className="text-muted-foreground mb-4 max-w-md">{error}</p>
+                <Button onClick={() => window.location.reload()}>Try Again</Button>
             </div>
         );
     }

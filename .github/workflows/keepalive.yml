@@ -1,0 +1,26 @@
+name: Keep Render Services Awake
+
+on:
+  schedule:
+    # Run every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # allow manual triggering
+
+jobs:
+  ping-services:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend Service
+        run: |
+          echo "Pinging backend health endpoint..."
+          curl -s --max-time 30 https://jurisgenie-backend-6ijp.onrender.com/health || echo "Backend ping failed!"
+          
+      - name: Ping Pro UI Service
+        run: |
+          echo "Pinging Pro UI..."
+          curl -s --max-time 30 https://jurisgenie-pro-6ijp.onrender.com/pro/api/debug || echo "Pro UI ping failed!"
+          
+      - name: Ping Classic UI/RAG Service
+        run: |
+          echo "Pinging Classic/RAG landing page..."
+          curl -s --max-time 30 https://jurisgenie-classic.onrender.com || echo "Classic UI ping failed!"

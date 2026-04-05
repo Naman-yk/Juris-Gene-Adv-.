@@ -37,6 +37,7 @@ services:
         value: production
       - key: NODE_VERSION
         value: 20
+      - fromGroup: jurisgenie-secrets
 
   # 3. Next.js Pro UI
   - type: web

@@ -118,14 +118,15 @@ export function useAnalysis(contractId: string): {
     const contracts = useContractStore((state) => state.contracts);
     const contract = contracts.find(c => c.id === contractId);
 
-    const [analysis, setAnalysis] = useState<DocumentAnalysis | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const fetchedRef = useRef(false);
-
     // Detect demo case
     const content = contract?.content || '';
     const isDemo = contractId === 'jg-demo-138' || isDemoCase(content);
+
+    // Initialize loading=true for non-demo so pages show spinner immediately
+    const [analysis, setAnalysis] = useState<DocumentAnalysis | null>(null);
+    const [loading, setLoading] = useState(!isDemo);
+    const [error, setError] = useState<string | null>(null);
+    const fetchedRef = useRef(false);
 
     useEffect(() => {
         // For demo case, don't fetch — pages use hardcoded data

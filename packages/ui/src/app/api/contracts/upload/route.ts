@@ -4,32 +4,27 @@ import { BACKEND_URL } from '@/lib/backend-url';
 
 export async function POST(request: NextRequest) {
     try {
-        let formData: FormData;
-        try {
-            formData = await request.formData();
-        } catch (parseErr) {
-            return NextResponse.json({ error: 'Failed to parse form data', details: String(parseErr) }, { status: 400 });
+        const contentType = request.headers.get('content-type');
+        if (!contentType || !contentType.includes('multipart/form-data')) {
+            return NextResponse.json({ error: 'Invalid content type. Must be multipart/form-data' }, { status: 400 });
         }
 
-        const file = formData.get('file');
+        console.log(`[upload] Proxying upload stream directly to ${BACKEND_URL}/contracts/upload`);
 
-        if (!file || !(file instanceof File)) {
-            return NextResponse.json({ error: 'No file provided' }, { status: 400 });
-        }
-
-        console.log(`[upload] Forwarding ${file.name} (${file.size} bytes) to ${BACKEND_URL}/contracts/upload`);
-
-        const outForm = new FormData();
-        outForm.append('file', file, file.name);
-
-        // 60s timeout to allow for Render free-tier cold starts
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 60000);
 
         try {
+            // Proxy the exact stream and headers to avoid FormData re-packing bugs
             const backendRes = await fetch(`${BACKEND_URL}/contracts/upload`, {
                 method: 'POST',
-                body: outForm,
+                headers: {
+                    'content-type': contentType,
+                },
+                body: request.body as any,
+                // Required for Next.js when sending a ReadableStream body
+                // @ts-ignore
+                duplex: 'half',
                 signal: controller.signal,
             });
 

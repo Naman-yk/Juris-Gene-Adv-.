@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from 'react';
-import { UploadCloud, File, AlertCircle, FileText, CheckCircle2 } from 'lucide-react';
+import { UploadCloud, File, AlertCircle, FileText, CheckCircle2, Play } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PipelineIndicator } from '@/components/ui/pipeline-indicator';
 import { Button } from '@/components/ui/button';
@@ -98,6 +98,16 @@ export default function NewContractPage() {
                 <p className="text-muted-foreground mt-2">
                     Upload a physical or digital contract PDF to begin the JurisGenie pipeline.
                 </p>
+                <div className="mt-6 flex flex-wrap items-center gap-4">
+                    <Button
+                        onClick={() => router.push('/contracts/jg-demo-138/core')}
+                        className="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white shadow-lg shadow-emerald-600/20"
+                    >
+                        <Play className="mr-2 h-5 w-5" />
+                        Run Annotated Demo Case
+                    </Button>
+                    <span className="text-sm font-medium text-muted-foreground">OR ingest your own below</span>
+                </div>
             </div>
 
             {!isProcessing && !result && (

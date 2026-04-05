@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, ArrowRight, Search, UploadCloud, Plus, Loader2, RefreshCw } from 'lucide-react';
+import { FileText, ArrowRight, Search, UploadCloud, Plus, Loader2, RefreshCw, Play } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { HashBadge } from '@/components/ui/hash-badge';
@@ -78,6 +78,13 @@ export default function ContractsPage() {
                         className="hidden"
                         accept=".pdf,.txt,.json,.docx"
                     />
+                    <Button
+                        onClick={() => router.push('/contracts/jg-demo-138/core')}
+                        className="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white shadow-lg shadow-emerald-600/20"
+                    >
+                        <Play className="mr-2 h-5 w-5" />
+                        Run Demo
+                    </Button>
                     <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-600/20">
                         {isUploading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <UploadCloud className="mr-2 h-5 w-5" />}
                         {isUploading ? 'Uploading...' : 'Upload File'}

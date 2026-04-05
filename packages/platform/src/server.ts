@@ -44,7 +44,62 @@ interface ContractSummary {
 
 const contractStore: Map<string, ContractSummary> = new Map();
 
+const DEMO_CASE_CONTENT = `IN THE COURT OF MS. URVI GUPTA, JMFC NI ACT-01, CENTRAL, TIS HAZARI COURTS, DELHI
+Complaint Case No.: 528334/2016
+Complainant: Sh. Suraj Yadav, S/o Late Sh. Jamuna Prasad, R/o D-30, Lalita Block, Shastri Nagar, Delhi-110052
+Accused: Sh. Ram Avtar Sharma, S/o Sh. Shiv Charan, R/o B-82, Gali No. 5, Shastri Nagar, Delhi-110052
+
+The complainant lent Rs.1,80,000 to the accused. In discharge of his liability, the accused issued Cheque No. 073525 dated 03.09.2015 for Rs.2,00,000 drawn on State Bank of India, Shastri Nagar Branch.
+
+The cheque was returned unpaid with the endorsement "Funds Insufficient" vide return memo dated 09.09.2015.
+
+The complainant sent a legal notice dated 10.09.2015 to accused. Despite service of the legal notice, accused failed to make the payment within the statutory period.
+
+The matter was settled for the cheque amount and the accused undertook to pay Rs. 2,00,000 on 27.06.2017. Thereafter, on failure to make the payment, notice under section 251 Cr.P.C was framed on 26.09.2017.
+
+Accused stated the cheque was given as a blank signed security cheque for the loan of Rs. 1,80,000. He stated repayment of Rs.1,20,000 qua the said loan.
+
+He also admitted his liability of Rs. 2,00,000 towards the complainant, subsequent to which he was prompted by his counsel to state otherwise.
+
+The complainant relied on the following documents:
+Ex.CW1/A — Bank statement showing loan of Rs.1,80,000
+Ex.CW1/B — Original Cheque no.073525 dated 03.09.2015
+Ex.CW1/C — Bank Return Memo dated 09.09.2015
+Ex.CW1/D — Legal Demand Notice dated 10.09.2015
+Ex.CW1/G — Tracking report confirming item "delivered"
+
+The defence of repayment of Rs.1,20,000 was raised but no proof of repayment was produced by the accused.
+
+Accused produced settlement agreement Ex.DW1/1 dated 21.07.2016 and Mark A dated 30.09.2022. The documents were never put to complainant during cross-examination.
+
+The accused has failed to rebut the presumption under S.139 NI Act. Mere assertion or bald denials cannot be treated as proof.
+
+Accused Sh. Ram Avtar Sharma is hereby CONVICTED of the offence punishable under Section 138, Negotiable Instruments Act, 1881.
+
+Announced in the open court on 02.04.2026`;
+
+/** Detect if uploaded text is the demo case */
+function isDemoCase(text: string): boolean {
+    if (!text) return false;
+    const lower = text.toLowerCase();
+    const markers = ['suraj yadav', 'ram avtar', '073525', '528334', 'section 138'];
+    return markers.filter(m => lower.includes(m)).length >= 2;
+}
+
 const DEMO_CONTRACTS: ContractSummary[] = [
+    {
+        id: 'jg-demo-138',
+        title: 'Suraj Yadav vs Ram Avtar Sharma — Section 138 NI Act',
+        parties: 'Sh. Suraj Yadav ↔ Sh. Ram Avtar Sharma',
+        partyA: 'Sh. Suraj Yadav',
+        partyB: 'Sh. Ram Avtar Sharma',
+        status: 'ACTIVE',
+        state: 'ACTIVE',
+        hash: '0x7a3f8c1d2e4b5a6f9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b',
+        updatedAt: '2026-04-02',
+        content: DEMO_CASE_CONTENT,
+        pages: 23,
+    },
     {
         id: 'jg-001',
         title: 'SaaS License Agreement',
@@ -276,6 +331,23 @@ app.post('/contracts/upload', upload.single('file'), async (req: Request, res: R
 
         if (!fileContent || fileContent.trim().length === 0) {
             fileContent = `[Document uploaded: ${fileName}, ${req.file.size} bytes. Text extraction produced no readable content.]`;
+        }
+
+        // ─── DEMO CASE DETECTION ───
+        // If uploaded text matches the demo case, return the pre-built deterministic contract
+        if (isDemoCase(fileContent)) {
+            const demoContract = contractStore.get('jg-demo-138');
+            if (demoContract) {
+                // Update the demo contract content with the newly extracted text
+                demoContract.content = fileContent;
+                contractStore.set('jg-demo-138', demoContract);
+
+                res.status(201).json({
+                    message: 'Demo case detected — deterministic output loaded',
+                    contract: demoContract,
+                });
+                return;
+            }
         }
 
         const contractId = `jg-${Date.now().toString(36)}`;

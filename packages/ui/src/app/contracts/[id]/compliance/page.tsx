@@ -2,92 +2,85 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, ChevronDown, ChevronRight, AlertTriangle, Info, CheckCircle, ArrowRight } from 'lucide-react';
+import { Shield, ChevronDown, ChevronRight, AlertTriangle, Info, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useContractStore } from '@/lib/stores';
-import { WhyCompliancePanel, RiskSummaryPanel } from '@/components/ui/explainability';
+import { DEMO_COMPLIANCE_RULES, DEMO_ADDITIONAL_FINDINGS, type ComplianceRule } from '@/lib/demo-data';
 
-// Mock Data
-const COMPLIANCE_STATUS = "COMPLIANT"; // COMPLIANT, NON_COMPLIANT, AMBIGUOUS
-const FINDINGS = [
-    { id: 1, severity: 'LOW', clauseRef: 'c2', rule: 'GDPR_DATA_MINIMIZATION', reason: 'Confidentiality provision lacks explicit data retention timelines, potentially conflicting with GDPR Article 5(1)(e) storage limitation principles.', status: 'AMBIGUOUS' },
-    { id: 2, severity: 'INFO', clauseRef: 'c1', rule: 'LICENSE_GRANT_EXPLICIT', reason: 'License grant clearly demarcates non-exclusive rights, though absence of territorial limitations may require future sub-licensing amendments.', status: 'PASS' },
-];
+function StatusIcon({ status }: { status: string }) {
+    switch (status) {
+        case 'PASS': return <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />;
+        case 'FAIL': return <XCircle className="h-5 w-5 text-red-500 flex-shrink-0" />;
+        case 'REVIEW': return <AlertTriangle className="h-5 w-5 text-yellow-500 flex-shrink-0" />;
+        default: return <Info className="h-5 w-5 text-blue-500 flex-shrink-0" />;
+    }
+}
 
-const TRACE_TREE = {
-    id: "EVAL_ROOT",
-    rule: "SOFTWARE_COMPLIANCE_SUITE",
-    result: "PASS",
-    children: [
-        {
-            id: "EVAL_1",
-            rule: "GDPR_CHECK",
-            result: "AMBIGUOUS",
-            children: [
-                { id: "EVAL_1_A", rule: "DATA_MINIMIZATION", result: "AMBIGUOUS", detail: "Clause c2 missing duration" }
-            ]
-        },
-        {
-            id: "EVAL_2",
-            rule: "LICENSE_INTEGRITY",
-            result: "PASS",
-            children: [
-                { id: "EVAL_2_A", rule: "GRANT_EXPLICIT", result: "PASS", detail: "Clause c1 satisfies requirement" }
-            ]
-        }
-    ]
-};
+function statusColor(status: string): string {
+    switch (status) {
+        case 'PASS': return 'border-green-500/30 bg-green-500/5';
+        case 'FAIL': return 'border-red-500/30 bg-red-500/5';
+        case 'REVIEW': return 'border-yellow-500/30 bg-yellow-500/5';
+        default: return 'border-border';
+    }
+}
 
-const TraceNode = ({ node }: { node: any }) => {
-    const [expanded, setExpanded] = useState(true);
-    const hasChildren = node.children && node.children.length > 0;
+function statusBadge(status: string): string {
+    switch (status) {
+        case 'PASS': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+        case 'FAIL': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+        case 'REVIEW': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+        default: return 'bg-muted text-muted-foreground';
+    }
+}
 
-    const getIcon = (result: string) => {
-        switch (result) {
-            case 'PASS': return <CheckCircle className="h-4 w-4 text-green-500" />;
-            case 'FAIL': return <AlertTriangle className="h-4 w-4 text-destructive" />;
-            case 'AMBIGUOUS': return <Info className="h-4 w-4 text-yellow-500" />;
-            default: return null;
-        }
-    };
+function RuleCard({ rule, index }: { rule: ComplianceRule; index: number }) {
+    const [expanded, setExpanded] = useState(false);
 
     return (
-        <div className="ml-4 mt-2">
-            <div
-                className={`flex items-center gap-2 py-1 px-2 rounded hover:bg-muted/50 ${hasChildren ? 'cursor-pointer' : ''}`}
-                onClick={() => hasChildren && setExpanded(!expanded)}
-            >
-                {hasChildren ? (expanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />) : <span className="w-4 inline-block" />}
-                {getIcon(node.result)}
-                <span className="font-mono text-sm font-semibold">{node.rule}</span>
-                {node.detail && <span className="text-sm text-muted-foreground ml-2">- {node.detail}</span>}
+        <div className={`rounded-lg border p-4 transition-all ${statusColor(rule.status)}`}>
+            <div className="flex items-start gap-3 cursor-pointer" onClick={() => setExpanded(!expanded)}>
+                <StatusIcon status={rule.status} />
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                        <h4 className="font-semibold text-sm flex items-center gap-2">
+                            <span className="text-muted-foreground font-mono text-xs">#{index + 1}</span>
+                            {rule.rule.replace(/_/g, ' ')}
+                        </h4>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${statusBadge(rule.status)}`}>
+                            {rule.status}
+                        </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{rule.description}</p>
+                </div>
+                {expanded ? <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" /> : <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />}
             </div>
-            {expanded && hasChildren && (
-                <div className="border-l border-muted-foreground/20 ml-2 pl-2">
-                    {node.children.map((child: any) => (
-                        <TraceNode key={child.id} node={child} />
-                    ))}
+            {expanded && (
+                <div className="mt-3 ml-8 p-3 rounded-md bg-muted/50 text-sm leading-relaxed">
+                    {rule.explanation}
                 </div>
             )}
         </div>
     );
-};
+}
 
 export default function ComplianceDashboardPage({ params }: { params: { id: string } }) {
     const router = useRouter();
     const contracts = useContractStore((state) => state.contracts);
-    const contract = contracts.find(c => c.id === params.id) || { title: "Unknown Contract", hash: "0xabc123456789def0123456789abcdeffedcba9876543210" };
+    const contract = contracts.find(c => c.id === params.id) || { title: "Unknown Contract", hash: "0x000" };
+
+    const passCount = DEMO_COMPLIANCE_RULES.filter(r => r.status === 'PASS').length;
+    const totalCount = DEMO_COMPLIANCE_RULES.length;
+    const allPassed = passCount === totalCount;
 
     return (
         <div className="container py-8 max-w-5xl">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Compliance Dashboard</h1>
-                    <p className="text-muted-foreground flex flex-wrap items-center gap-2 mt-1 font-medium">
-                        {contract.title} <span className="text-border">|</span>
-                        ID: {params.id} <span className="text-border">|</span>
-                        Current Hash: <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">{contract.hash.substring(0, 8)}...</span>
+                    <h1 className="text-3xl font-bold tracking-tight">Compliance Engine</h1>
+                    <p className="text-muted-foreground mt-1 text-sm font-medium">
+                        Section 138 NI Act — Ingredient Check
                     </p>
                 </div>
                 <div className="flex gap-3">
@@ -100,55 +93,59 @@ export default function ComplianceDashboardPage({ params }: { params: { id: stri
                 </div>
             </div>
 
-            <RiskSummaryPanel findings={FINDINGS} />
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-1 border-primary/20 bg-primary/5">
+                {/* Overall Status */}
+                <Card className={`lg:col-span-1 ${allPassed ? 'border-green-500/30 bg-green-500/5' : 'border-yellow-500/30 bg-yellow-500/5'}`}>
                     <CardHeader className="text-center pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Overall Status</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center py-8">
-                        <Shield className="h-24 w-24 text-green-500 mb-6 drop-shadow-md" />
-                        <h2 className="text-3xl font-bold text-green-600 dark:text-green-500">{COMPLIANCE_STATUS}</h2>
-                        <p className="text-center text-sm text-muted-foreground mt-4 max-w-[250px]">
-                            Document achieves 95% alignment with institutional compliance heuristics. Residual risk identified in minor ambiguity regarding data lifecycle management.
+                        <Shield className={`h-24 w-24 mb-6 drop-shadow-md ${allPassed ? 'text-green-500' : 'text-yellow-500'}`} />
+                        <h2 className={`text-3xl font-bold ${allPassed ? 'text-green-600 dark:text-green-500' : 'text-yellow-600 dark:text-yellow-500'}`}>
+                            {allPassed ? 'ALL PASSED' : 'REVIEW NEEDED'}
+                        </h2>
+                        <p className="text-center text-sm text-muted-foreground mt-4 max-w-[280px]">
+                            {passCount}/{totalCount} Section 138 ingredients verified. All six statutory requirements satisfied — conviction is legally sound.
                         </p>
+                        <div className="mt-6 w-full max-w-[200px]">
+                            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                <span>Progress</span>
+                                <span>{passCount}/{totalCount}</span>
+                            </div>
+                            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                                <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${(passCount / totalCount) * 100}%` }} />
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 
+                {/* Rules */}
                 <div className="lg:col-span-2 space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Identified Findings</CardTitle>
+                            <CardTitle className="flex items-center gap-2">
+                                <Shield className="h-5 w-5 text-primary" />
+                                Section 138 NI Act — 6 Ingredients
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <div className="space-y-3">
-                                {FINDINGS.map(finding => (
-                                    <div key={finding.id} className="flex gap-4 p-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-                                        <div className="mt-0.5">
-                                            {finding.severity === 'LOW' && <Info className="h-5 w-5 text-yellow-500" />}
-                                            {finding.severity === 'INFO' && <CheckCircle className="h-5 w-5 text-blue-500" />}
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-start mb-1">
-                                                <span className="font-mono text-sm font-semibold">{finding.rule}</span>
-                                                <span className="text-xs bg-muted px-2 py-0.5 rounded text-muted-foreground">Ref: {finding.clauseRef}</span>
-                                            </div>
-                                            <p className="text-sm">{finding.reason}</p>
-                                            <WhyCompliancePanel finding={finding} />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                        <CardContent className="space-y-3">
+                            {DEMO_COMPLIANCE_RULES.map((rule, i) => (
+                                <RuleCard key={rule.id} rule={rule} index={i} />
+                            ))}
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Evaluation Trace Tree</CardTitle>
+                            <CardTitle className="flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                                Additional Findings
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="bg-muted/30 rounded-md p-4 min-h-[200px] overflow-auto border font-mono text-sm">
-                            <TraceNode node={TRACE_TREE} />
+                        <CardContent className="space-y-3">
+                            {DEMO_ADDITIONAL_FINDINGS.map((rule, i) => (
+                                <RuleCard key={rule.id} rule={rule} index={i} />
+                            ))}
                         </CardContent>
                     </Card>
                 </div>

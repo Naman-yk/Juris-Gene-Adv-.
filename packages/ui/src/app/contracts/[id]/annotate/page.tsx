@@ -2,100 +2,124 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Check, X, Edit2, ArrowRight } from 'lucide-react';
+import { AlertTriangle, Check, X, Edit2, ArrowRight, FileText, Calendar, DollarSign, Users, Gavel, FileCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ProvenanceBadge } from '@/components/ui/provenance-badge';
 import { useContractStore } from '@/lib/stores';
 import { AIOptionalBanner } from '@/components/ui/explainability';
+import { isDemoCase, DEMO_PARTIES, DEMO_FINANCIAL, DEMO_DATES, DEMO_CASE, DEMO_EXHIBITS } from '@/lib/demo-data';
 
-// Helper to extract dynamic suggestions from the actual text
-function generateMockSuggestions(content: string, contractSummary: any) {
+/* ────────────────────────────────────────────────────────────── */
+/* Deterministic demo suggestions                                 */
+/* ────────────────────────────────────────────────────────────── */
+
+const DEMO_SUGGESTIONS = [
+    {
+        id: 1,
+        type: 'Party Identification',
+        icon: Users,
+        confidence: 99,
+        text: `Complainant: ${DEMO_PARTIES.complainant.name}, S/o ${DEMO_PARTIES.complainant.father}, R/o ${DEMO_PARTIES.complainant.address}\n\nAccused: ${DEMO_PARTIES.accused.name}, S/o ${DEMO_PARTIES.accused.father}, R/o ${DEMO_PARTIES.accused.address}`,
+        status: 'pending',
+    },
+    {
+        id: 2,
+        type: 'Financial Instrument',
+        icon: DollarSign,
+        confidence: 98,
+        text: `Cheque No. ${DEMO_FINANCIAL.chequeNumber} dated ${DEMO_FINANCIAL.chequeDate} for ${DEMO_FINANCIAL.chequeAmount} drawn on ${DEMO_FINANCIAL.bank}.\nDishonour reason: "${DEMO_FINANCIAL.dishonourReason}" — Return memo dated ${DEMO_FINANCIAL.returnMemoDate}.\nOriginal loan amount: ${DEMO_FINANCIAL.loanAmount}.`,
+        status: 'pending',
+    },
+    {
+        id: 3,
+        type: 'Key Dates',
+        icon: Calendar,
+        confidence: 97,
+        text: `Loan issued: ${DEMO_DATES.loanDate}\nCheque date: ${DEMO_DATES.chequeDate}\nDishonour: ${DEMO_DATES.dishonourDate}\nLegal notice: ${DEMO_DATES.noticeDate}\nSettlement 1: ${DEMO_DATES.settlementDate2016}\nNotice u/s 251: ${DEMO_DATES.noticeUnder251}\nSettlement 2: ${DEMO_DATES.settlementDate2022}\nConviction: ${DEMO_DATES.convictionDate}`,
+        status: 'pending',
+    },
+    {
+        id: 4,
+        type: 'Legal Provision',
+        icon: Gavel,
+        confidence: 99,
+        text: `${DEMO_CASE.section}\nCourt: ${DEMO_CASE.court}\nCase No.: ${DEMO_CASE.caseNumber}\nPresiding Judge: ${DEMO_CASE.judge}\nVerdict: ${DEMO_CASE.verdict}`,
+        status: 'pending',
+    },
+    {
+        id: 5,
+        type: 'Exhibits',
+        icon: FileCheck,
+        confidence: 96,
+        text: DEMO_EXHIBITS.map(e => `${e.id}: ${e.description}`).join('\n'),
+        status: 'pending',
+    },
+    {
+        id: 6,
+        type: 'Defence Claims',
+        icon: FileText,
+        confidence: 88,
+        text: `Accused claims:\n1. Cheque was a "blank signed security cheque" for the loan of ${DEMO_FINANCIAL.loanAmount}\n2. Repayment of ${DEMO_FINANCIAL.disputedRepayment} already made (no documentary proof produced)\n3. Admitted liability of ${DEMO_FINANCIAL.chequeAmount} — later retracted on counsel's prompting\n\n⚠ Settlement documents Ex.DW1/1 (2016) and Mark A (2022) never put to complainant during cross-examination → inadmissible per Section 145 CrPC.`,
+        status: 'pending',
+    },
+];
+
+/* ────────────────────────────────────────────────────────────── */
+/* Dynamic extraction for non-demo documents                      */
+/* ────────────────────────────────────────────────────────────── */
+
+function generateDynamicSuggestions(content: string, contractSummary: any) {
     if (!content) return [];
 
     const normalizedContent = content.replace(/\r/g, '');
-    
-    // Split into clumps (paragraphs or sections) - more flexible split
-    const clumps = normalizedContent.split(/\n\s*\n/).filter(c => c.trim().length > 5);
-    
-    // Split into sentences for fine-grained search
-    // Improved regex to avoid splitting on common honorifics AND currency abbreviations (Rs.)
     const sentences = normalizedContent
-        .replace(/\b(Mr|Ms|Mrs|Dr|Shri|Rs|No|Nos|Anr|Ors)\.\s*/gi, "$1_") // Temporarily replace period
+        .replace(/\b(Mr|Ms|Mrs|Dr|Shri|Rs|No|Nos|Anr|Ors)\.\s*/gi, "$1_")
         .split(/(?<=[.?!;])\s+|\n/)
-        .map(s => s.replace(/\b(Mr|Ms|Mrs|Dr|Shri|Rs|No|Nos|Anr|Ors)_/gi, "$1. ").trim()) // Restore period
+        .map(s => s.replace(/\b(Mr|Ms|Mrs|Dr|Shri|Rs|No|Nos|Anr|Ors)_/gi, "$1. ").trim())
         .filter(s => s.length > 10);
 
+    const clumps = normalizedContent.split(/\n\s*\n/).filter(c => c.trim().length > 5);
     const suggestions: any[] = [];
     let idCounter = 1;
 
     const partyA = contractSummary?.partyA || "";
     const partyB = contractSummary?.partyB || "";
-
-    // 1. Party Identification
-    // Strategy: Look for the segment containing appellant/respondent OR the names identified in the store
-    let partyContent = "";
-    
-    // Look for a clump that mentions the appellant name
     const appellantPart = partyA ? partyA.split(' ')[0].toUpperCase() : "APPELLANT";
     const respondentPart = partyB ? partyB.split(' ')[0].toUpperCase() : "RESPONDENT";
 
+    // Party identification
     const partyClumps = clumps.filter(c => 
         c.toUpperCase().includes(appellantPart) || 
         c.toUpperCase().includes(respondentPart) ||
         c.toLowerCase().includes(' versus ') ||
         c.toLowerCase().includes(' vs.') ||
-        c.toLowerCase().includes(' v/s ') ||
         c.toLowerCase().includes(' between ')
     );
 
     if (partyClumps.length > 0) {
-        // Take the first few clumps that seem relevant to party intro
-        partyContent = partyClumps.slice(0, 3).join("\n\n");
-    } else {
-        // Absolute fallback for party ID
-        partyContent = sentences.slice(0, 5).join("\n");
-    }
-
-    if (partyContent) {
         suggestions.push({
             id: idCounter++, type: 'Party Identification', confidence: 98,
-            text: partyContent.substring(0, 1000), status: 'pending'
+            text: partyClumps.slice(0, 3).join("\n\n").substring(0, 1000), status: 'pending'
         });
     }
 
-    // 2. Obligation
-    // Strategy: Find binding sentences, prioritizing core outcomes (compensation, award, etc.)
+    // Obligation
     const bindingSentences = sentences.filter(s =>
-        (s.toLowerCase().includes('shall') ||
-         s.toLowerCase().includes('undertakes') ||
-         s.toLowerCase().includes('covenants') ||
-         s.toLowerCase().includes('must') || 
-         s.toLowerCase().includes('directed to') ||
-         s.toLowerCase().includes('ordered to'))
+        s.toLowerCase().includes('shall') || s.toLowerCase().includes('must') || 
+        s.toLowerCase().includes('directed to') || s.toLowerCase().includes('ordered to')
     );
-    
-    // Core outcomes for court cases
-    const coreOutcome = sentences.find(s => 
-        (s.toLowerCase().includes('compensation') || s.toLowerCase().includes('award')) && 
-        (s.toLowerCase().includes('rs.') || s.toLowerCase().includes('rupees') || s.toLowerCase().includes('paid') || s.toLowerCase().includes('deposit'))
-    ) || sentences.find(s => s.toLowerCase().includes(' remand ') || s.toLowerCase().includes(' set aside '));
-
-    const finalObligation = coreOutcome || bindingSentences.find(s => !s.toLowerCase().includes('procedural') && !s.toLowerCase().includes('witness'));
-
-    if (finalObligation) {
+    if (bindingSentences.length > 0) {
         suggestions.push({
             id: idCounter++, type: 'Obligation', confidence: 94,
-            text: finalObligation, status: 'pending'
+            text: bindingSentences[0], status: 'pending'
         });
     }
 
-    // 3. Effective Date / Decision Date
+    // Date
     const datePattern = sentences.find(s => 
-        s.toLowerCase().includes('date of decision') || 
         (s.toLowerCase().includes('dated') && /\d{1,2}[./-]\d{1,2}[./-]\d{2,4}/.test(s))
     );
-    
     if (datePattern) {
         suggestions.push({
             id: idCounter++, type: 'Effective Date', confidence: 96,
@@ -103,17 +127,12 @@ function generateMockSuggestions(content: string, contractSummary: any) {
         });
     }
 
-    // 4. Procedural Requirements
-    const procedural = sentences.find(s => s.toLowerCase().includes('witness') && s.toLowerCase().includes('shall') && s !== finalObligation);
-    if (procedural) {
-        suggestions.push({
-            id: idCounter++, type: 'Procedural Requirement', confidence: 85,
-            text: procedural, status: 'pending'
-        });
-    }
-
     return suggestions;
 }
+
+/* ────────────────────────────────────────────────────────────── */
+/* Component                                                       */
+/* ────────────────────────────────────────────────────────────── */
 
 export default function AIAnnotationPage({ params }: { params: { id: string } }) {
     const router = useRouter();
@@ -125,13 +144,18 @@ export default function AIAnnotationPage({ params }: { params: { id: string } })
     const [editValue, setEditValue] = useState<string>('');
 
     useEffect(() => {
-        if (contract.content) {
-            setSuggestions(generateMockSuggestions(contract.content, contract));
+        const content = contract.content || '';
+        if (isDemoCase(content) || params.id === 'jg-demo-138') {
+            // Deterministic: always return the same demo suggestions
+            setSuggestions(DEMO_SUGGESTIONS.map(s => ({ ...s })));
+        } else {
+            setSuggestions(generateDynamicSuggestions(content, contract));
         }
-    }, [contract.content, contract.id]);
+    }, [contract.content, contract.id, params.id]);
 
     const pendingCount = suggestions.filter(s => s.status === 'pending').length;
     const totalCount = suggestions.length;
+    const allReviewed = pendingCount === 0;
 
     const handleAction = (id: number, status: string) => {
         setSuggestions(prev => prev.map(s => s.id === id ? { ...s, status } : s));
@@ -151,13 +175,11 @@ export default function AIAnnotationPage({ params }: { params: { id: string } })
         setEditingId(null);
     };
 
-    const allReviewed = pendingCount === 0;
-
     const renderHighlightedContent = () => {
         if (!contract.content) {
             return (
                 <div className="text-muted-foreground italic flex items-center justify-center h-full">
-                    No document text available. Please re-ingest the document.
+                    No document text available. Please upload a document.
                 </div>
             );
         }
@@ -166,19 +188,19 @@ export default function AIAnnotationPage({ params }: { params: { id: string } })
         const partyA = contract.partyA;
         const partyB = contract.partyB;
         
-        // Helper to underline entities within an element (string or mark)
         const underlineEntities = (text: string, keyPrefix: string) => {
             if (!text) return [text];
             let elements: any[] = [text];
 
-            [partyA, partyB].forEach((partyName, pIdx) => {
+            [partyA, partyB].forEach((partyName: string, pIdx: number) => {
                 if (!partyName || partyName === 'Party A' || partyName === 'Party B' || partyName === 'Counter Party') return;
                 
                 const newElements: any[] = [];
-                elements.forEach((el, elIdx) => {
+                elements.forEach((el: any, elIdx: number) => {
                     if (typeof el === 'string') {
-                        const parts = el.split(new RegExp(`(${partyName})`, 'g'));
-                        parts.forEach((part, partIdx) => {
+                        const escapedName = partyName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const parts = el.split(new RegExp(`(${escapedName})`, 'g'));
+                        parts.forEach((part: string, partIdx: number) => {
                             if (part === partyName) {
                                 newElements.push(
                                     <span key={`${keyPrefix}-entity-${pIdx}-${elIdx}-${partIdx}`} className="underline decoration-2 decoration-blue-500 font-bold px-0.5">
@@ -207,7 +229,7 @@ export default function AIAnnotationPage({ params }: { params: { id: string } })
                 if (s.status === 'rejected') return;
 
                 const newElements: any[] = [];
-                elements.forEach((el, elIdx) => {
+                elements.forEach((el: any, elIdx: number) => {
                     if (typeof el === 'string') {
                         const startIndex = el.indexOf(s.text);
                         if (startIndex !== -1) {
@@ -232,8 +254,7 @@ export default function AIAnnotationPage({ params }: { params: { id: string } })
                 elements = newElements;
             });
 
-            // After applying markings, we need to apply underlining to the remaining string parts
-            const finalElements = elements.map((el, elIdx) => {
+            const finalElements = elements.map((el: any, elIdx: number) => {
                 if (typeof el === 'string') {
                     return underlineEntities(el, `para-${idx}-${elIdx}`);
                 }
@@ -247,16 +268,16 @@ export default function AIAnnotationPage({ params }: { params: { id: string } })
     return (
         <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
             <AIOptionalBanner />
-            {/* Global Warning Banner */}
+            {/* Warning Banner */}
             <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-3 flex items-center justify-center gap-2 text-amber-700 dark:text-amber-400 text-sm font-medium">
                 <AlertTriangle className="h-4 w-4" />
                 AI suggestions are NOT legally binding. Human review is required before execution.
             </div>
 
-            {/* Header bar */}
+            {/* Header */}
             <div className="border-b px-6 py-4 flex items-center justify-between bg-background z-10">
                 <div>
-                    <h1 className="text-2xl font-bold">AI Annotation Review</h1>
+                    <h1 className="text-2xl font-bold">AI Extraction</h1>
                     <p className="text-muted-foreground text-sm font-medium">{contract.title} <span className="text-muted/50 font-normal">| {params.id}</span></p>
                 </div>
                 <div className="flex items-center gap-4">
@@ -279,70 +300,72 @@ export default function AIAnnotationPage({ params }: { params: { id: string } })
                     {renderHighlightedContent()}
                 </div>
 
-                {/* Right Panel: Suggestions */}
+                {/* Right Panel: Extracted Entities */}
                 <div className="w-1/2 bg-background p-6 overflow-y-auto flex flex-col gap-4">
                     <h3 className="font-semibold text-lg flex items-center justify-between">
                         Extracted Entities & Clauses
                         {allReviewed && <span className="text-green-500 text-sm flex items-center gap-1"><Check className="h-4 w-4" /> All Clear</span>}
                     </h3>
 
-                    {suggestions.map((suggestion) => (
-                        <Card key={suggestion.id} className={`transition-all ${suggestion.status === 'accepted' ? 'border-green-500/50 bg-green-500/5' : suggestion.status === 'rejected' ? 'border-red-500/50 bg-red-500/5 opacity-60' : 'border-border'}`}>
-                            <CardHeader className="pb-2 flex flex-row justify-between items-start">
-                                <div>
-                                    <CardTitle className="text-base">{suggestion.type}</CardTitle>
-                                    <p className="text-xs text-muted-foreground mt-1 tracking-wide">CONFIDENCE: {suggestion.confidence}%</p>
-                                </div>
-                                <ProvenanceBadge type="AI_GENERATED" />
-                            </CardHeader>
-                            <CardContent>
-                                {editingId === suggestion.id ? (
-                                    <textarea
-                                        className="w-full bg-background border rounded p-3 text-sm font-mono whitespace-pre-wrap min-h-[100px] outline-none focus:ring-2 focus:ring-primary"
-                                        value={editValue}
-                                        onChange={(e) => setEditValue(e.target.value)}
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <div className="bg-muted p-3 rounded text-sm font-mono whitespace-pre-wrap">
-                                        {suggestion.text}
+                    {suggestions.map((suggestion) => {
+                        const IconComp = suggestion.icon || FileText;
+                        return (
+                            <Card key={suggestion.id} className={`transition-all ${suggestion.status === 'accepted' ? 'border-green-500/50 bg-green-500/5' : suggestion.status === 'rejected' ? 'border-red-500/50 bg-red-500/5 opacity-60' : 'border-border'}`}>
+                                <CardHeader className="pb-2 flex flex-row justify-between items-start">
+                                    <div className="flex items-center gap-2">
+                                        <IconComp className="h-5 w-5 text-primary flex-shrink-0" />
+                                        <div>
+                                            <CardTitle className="text-base">{suggestion.type}</CardTitle>
+                                            <p className="text-xs text-muted-foreground mt-1 tracking-wide">CONFIDENCE: {suggestion.confidence}%</p>
+                                        </div>
                                     </div>
-                                )}
-                            </CardContent>
-                            {suggestion.status === 'pending' ? (
-                                <CardFooter className="flex justify-end gap-2 pt-0">
+                                    <ProvenanceBadge type="AI_GENERATED" />
+                                </CardHeader>
+                                <CardContent>
                                     {editingId === suggestion.id ? (
-                                        <>
-                                            <Button variant="outline" size="sm" onClick={cancelEdit}>
-                                                Cancel
-                                            </Button>
-                                            <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => saveEdit(suggestion.id)}>
-                                                Save
-                                            </Button>
-                                        </>
+                                        <textarea
+                                            className="w-full bg-background border rounded p-3 text-sm font-mono whitespace-pre-wrap min-h-[100px] outline-none focus:ring-2 focus:ring-primary"
+                                            value={editValue}
+                                            onChange={(e) => setEditValue(e.target.value)}
+                                            autoFocus
+                                        />
                                     ) : (
-                                        <>
-                                            <Button variant="outline" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950" onClick={() => handleAction(suggestion.id, 'rejected')}>
-                                                <X className="h-4 w-4 mr-1" /> Reject
-                                            </Button>
-                                            <Button variant="outline" size="sm" onClick={() => startEditing(suggestion)}>
-                                                <Edit2 className="h-4 w-4 mr-1" /> Edit
-                                            </Button>
-                                            <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleAction(suggestion.id, 'accepted')}>
-                                                <Check className="h-4 w-4 mr-1" /> Accept
-                                            </Button>
-                                        </>
+                                        <div className="bg-muted p-3 rounded text-sm font-mono whitespace-pre-wrap">
+                                            {suggestion.text}
+                                        </div>
                                     )}
-                                </CardFooter>
-                            ) : (
-                                <CardFooter className="flex justify-end pt-0">
-                                    <Button variant="ghost" size="sm" onClick={() => handleAction(suggestion.id, 'pending')}>
-                                        Undo
-                                    </Button>
-                                </CardFooter>
-                            )}
-                        </Card>
-                    ))}
+                                </CardContent>
+                                {suggestion.status === 'pending' ? (
+                                    <CardFooter className="flex justify-end gap-2 pt-0">
+                                        {editingId === suggestion.id ? (
+                                            <>
+                                                <Button variant="outline" size="sm" onClick={cancelEdit}>Cancel</Button>
+                                                <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => saveEdit(suggestion.id)}>Save</Button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Button variant="outline" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950" onClick={() => handleAction(suggestion.id, 'rejected')}>
+                                                    <X className="h-4 w-4 mr-1" /> Reject
+                                                </Button>
+                                                <Button variant="outline" size="sm" onClick={() => startEditing(suggestion)}>
+                                                    <Edit2 className="h-4 w-4 mr-1" /> Edit
+                                                </Button>
+                                                <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleAction(suggestion.id, 'accepted')}>
+                                                    <Check className="h-4 w-4 mr-1" /> Accept
+                                                </Button>
+                                            </>
+                                        )}
+                                    </CardFooter>
+                                ) : (
+                                    <CardFooter className="flex justify-end pt-0">
+                                        <Button variant="ghost" size="sm" onClick={() => handleAction(suggestion.id, 'pending')}>
+                                            Undo
+                                        </Button>
+                                    </CardFooter>
+                                )}
+                            </Card>
+                        );
+                    })}
                 </div>
             </div>
         </div>

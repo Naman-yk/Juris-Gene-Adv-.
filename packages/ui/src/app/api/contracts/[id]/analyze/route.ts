@@ -3,9 +3,13 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
     try {
+        // Forward the body which may contain document content
+        const body = await req.text();
+
         const backendRes = await fetch(`${BACKEND_URL}/contracts/${params.id}/analyze`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            body: body || '{}',
             cache: 'no-store',
         });
 

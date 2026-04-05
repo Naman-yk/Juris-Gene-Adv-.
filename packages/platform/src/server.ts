@@ -1053,8 +1053,13 @@ app.get('/contracts/:id/graph', (req, res) => {
 /** POST /contracts/:id/analyze — Extract structured data from document using Gemini */
 app.post('/contracts/:id/analyze', async (req: Request, res: Response) => {
     const contract = contractStore.get(req.params.id);
-    if (!contract) {
-        res.status(404).json({ error: 'Contract not found' });
+    const bodyContent = req.body?.content || '';
+    
+    // Use contract content from store, or fall back to content sent in the request body
+    const content = contract?.content || bodyContent;
+
+    if (!content || content.trim().length < 50) {
+        res.status(404).json({ error: 'Contract not found and no content provided' });
         return;
     }
 
@@ -1066,14 +1071,7 @@ app.post('/contracts/:id/analyze', async (req: Request, res: Response) => {
             return;
         }
 
-        // Run Gemini extraction
-        const content = contract.content || '';
-        if (!content || content.trim().length < 50) {
-            res.status(400).json({ error: 'Document content too short for analysis' });
-            return;
-        }
-
-        console.log(`[analyze] Running Gemini extraction for contract ${req.params.id}...`);
+        console.log(`[analyze] Running Gemini extraction for contract ${req.params.id} (content length: ${content.length})...`);
         const analysis = await analyzeDocument(content);
 
         // Cache result

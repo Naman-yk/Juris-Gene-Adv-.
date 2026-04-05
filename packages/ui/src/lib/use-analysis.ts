@@ -109,6 +109,22 @@ export interface DocumentAnalysis {
 // In-memory client-side cache to avoid re-fetching
 const clientCache = new Map<string, DocumentAnalysis>();
 
+// Persistent localStorage cache key prefix
+const LS_PREFIX = 'jg-analysis-';
+
+function getPersistedAnalysis(contractId: string): DocumentAnalysis | null {
+    try {
+        const raw = localStorage.getItem(LS_PREFIX + contractId);
+        return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+}
+
+function persistAnalysis(contractId: string, analysis: DocumentAnalysis): void {
+    try {
+        localStorage.setItem(LS_PREFIX + contractId, JSON.stringify(analysis));
+    } catch { /* storage full, ignore */ }
+}
+
 export function useAnalysis(contractId: string): {
     analysis: DocumentAnalysis | null;
     isDemo: boolean;
@@ -139,7 +155,7 @@ export function useAnalysis(contractId: string): {
         // Skip if already fetched in this mount
         if (fetchedRef.current) return;
 
-        // Check client cache
+        // Check in-memory cache
         const cached = clientCache.get(contractId);
         if (cached) {
             setAnalysis(cached);
@@ -147,7 +163,18 @@ export function useAnalysis(contractId: string): {
             return;
         }
 
-        // Fetch from backend
+        // Check localStorage cache
+        const persisted = getPersistedAnalysis(contractId);
+        if (persisted) {
+            clientCache.set(contractId, persisted);
+            setAnalysis(persisted);
+            setLoading(false);
+            fetchedRef.current = true;
+            return;
+        }
+
+        // Fetch from backend — send content in body so backend
+        // can analyze even if its in-memory store was wiped
         fetchedRef.current = true;
         setLoading(true);
         setError(null);
@@ -155,6 +182,7 @@ export function useAnalysis(contractId: string): {
         fetch(`/api/contracts/${contractId}/analyze`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content }),
         })
             .then(res => {
                 if (!res.ok) throw new Error(`Analysis failed (${res.status})`);
@@ -163,6 +191,7 @@ export function useAnalysis(contractId: string): {
             .then(data => {
                 if (data.analysis) {
                     clientCache.set(contractId, data.analysis);
+                    persistAnalysis(contractId, data.analysis);
                     setAnalysis(data.analysis);
                 } else {
                     throw new Error('No analysis data returned');
@@ -173,7 +202,7 @@ export function useAnalysis(contractId: string): {
                 setError(err.message);
             })
             .finally(() => setLoading(false));
-    }, [contractId, isDemo]);
+    }, [contractId, isDemo, content]);
 
     return { analysis, isDemo, loading, error };
 }

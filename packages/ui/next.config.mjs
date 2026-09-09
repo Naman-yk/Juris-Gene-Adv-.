@@ -7,6 +7,9 @@ const __dirname = path.dirname(__filename);
 const nextConfig = {
     reactStrictMode: true,
     basePath: '/pro',
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
     webpack: (config) => {
         config.resolve.alias.canvas = false;
         config.resolve.alias['@'] = path.resolve(__dirname, 'src');

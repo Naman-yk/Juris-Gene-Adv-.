@@ -57,7 +57,7 @@ function extractParties(text: string): { partyA: string; partyB: string } {
     if (complainant && accused) return { partyA: complainant[1].trim(), partyB: accused[1].trim() };
 
     // Pattern: "By: Name, Title" at signature blocks
-    const signatories = [...text.matchAll(/By:\s*([A-Z][A-Za-z\s.]{2,40}),\s*(?:CEO|Director|Managing|President|Partner|Founder)/gi)];
+    const signatories = Array.from(text.matchAll(/By:\s*([A-Z][A-Za-z\s.]{2,40}),\s*(?:CEO|Director|Managing|President|Partner|Founder)/gi));
     if (signatories.length >= 2) return { partyA: signatories[0][1].trim(), partyB: signatories[1][1].trim() };
 
     // Fallback: first two capitalized multi-word names

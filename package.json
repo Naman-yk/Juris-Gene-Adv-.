@@ -5,6 +5,7 @@
     "description": "JurisGenie — Deterministic Legal Execution Engine",
     "scripts": {
         "build": "pnpm -r run build",
+        "start": "pnpm --filter @jurisgenie/platform run start",
         "test": "pnpm -r run test",
         "demo": "pnpm --filter @jurisgenie/platform run demo",
         "lint": "eslint 'packages/*/src/**/*.ts'",

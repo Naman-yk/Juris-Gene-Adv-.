@@ -10,6 +10,16 @@ const nextConfig = {
     eslint: {
         ignoreDuringBuilds: true,
     },
+    async redirects() {
+        return [
+            {
+                source: '/',
+                destination: '/pro',
+                basePath: false,
+                permanent: false,
+            },
+        ];
+    },
     webpack: (config) => {
         config.resolve.alias.canvas = false;
         config.resolve.alias['@'] = path.resolve(__dirname, 'src');

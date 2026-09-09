@@ -25,10 +25,8 @@
 ### 🚀 Live Demos (No Login Required)
 
 **Pro Version** (Full Platform – Recommended for Technical/Audit Review)  
-→ [https://jurisgenie-pro-6ijp.onrender.com](https://jurisgenie-pro-6ijp.onrender.com/pro)
+→ https://juris-genie-advanced-ui.vercel.app/pro
 
-**Quick Analysis + AI Chat** (Fast risk scan)  
-→ [https://jurisgenie-classic-6ijp.onrender.com/upload.html](https://jurisgenie-classic-6ijp.onrender.com/upload.html)
 
 ---
 

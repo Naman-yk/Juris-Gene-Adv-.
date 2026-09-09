@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "pnpm-9_x"]
+
+[phases.install]
+cmds = ["pnpm install --frozen-lockfile=false"]
+
+[phases.build]
+cmds = ["pnpm --filter @jurisgenie/platform... run build"]
+
+[start]
+cmd = "pnpm --filter @jurisgenie/platform run start"
